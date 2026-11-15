@@ -8,7 +8,7 @@
 export type ProjectType = "deck" | "addition" | "garage" | "trade";
 export type Location = "city" | "outside";
 export type Status = "verified" | "partly" | "likely" | "unverified";
-export type JurisdictionId = "mecklenburg"; // add an id here when a new place is added
+export type JurisdictionId = "mecklenburg" | "catawba" | "cabarrus" | "union" | "robeson"; // add an id here when a new place is added
 
 export interface Jurisdiction {
   id: JurisdictionId;
@@ -19,7 +19,11 @@ export interface Jurisdiction {
   officeLabel: string;
   officeUrl: string;
   officePhone?: string;
+  officeEmail?: string;
+  officeAddress?: string;
   note: string;
+  // Facts read from official pages. Each one names its source and the date it was read.
+  facts?: { text: string; sourceUrl: string; checkedOn: string }[];
 }
 
 export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
@@ -31,6 +35,66 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officeUrl: "https://code.mecknc.gov",
     officePhone: "980-314-2633",
     note: "Includes the City of Charlotte lot review for projects inside city limits.",
+  },
+  catawba: {
+    id: "catawba",
+    name: "Catawba County, NC",
+    coverage: "directory",
+    officeLabel: "Catawba County Permit Center",
+    officeUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/",
+    officePhone: "828-465-8399",
+    officeEmail: "permitapps@catawbacountync.gov",
+    officeAddress: "25 Government Drive, Newton, NC 28658",
+    note: "Cities and towns in the county (Hickory, Conover, Newton and others) have their own planning offices for zoning.",
+    facts: [
+      { text: "The county says most building projects need zoning approval, and a building permit needs an approved zoning permit or a waiver letter from the zoning department.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-15" },
+      { text: "Permit applications and plan review applications are done online through the county's ePermits portal.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/plan-review/", checkedOn: "2026-11-15" },
+      { text: "Permit Center hours: Monday to Friday 8:00am to 5:00pm; permits are issued 8:00am to 4:00pm. Inspections: 828-465-8399.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-15" },
+      { text: "A county info sheet (dated 2014, so may be out of date) says a detached accessory structure needs both a zoning permit and a building permit, and a scaled footprint drawing for zoning.", sourceUrl: "https://www.catawbacountync.gov/site/assets/files/2490/residential-accessory.pdf", checkedOn: "2026-11-15" },
+    ],
+  },
+  cabarrus: {
+    id: "cabarrus",
+    name: "Cabarrus County, NC",
+    coverage: "directory",
+    officeLabel: "Cabarrus County Construction Standards",
+    officeUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    officePhone: "704-920-2128",
+    officeEmail: "construction2222@cabarruscounty.us",
+    officeAddress: "65 Church St S, Concord, NC 28025",
+    note: "Zoning is a separate county office (704-920-2141). Concord, Kannapolis and other towns may handle zoning themselves.",
+    facts: [
+      { text: "The county says a zoning permit is needed for additions, accessory structures such as a garage or storage building, and for installing or adding on to a deck or patio.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "Permits are tracked in the county's Accela portal. The county's permit form lists decks under both Addition and Accessory Structure permit types.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
+      { text: "A lien filing is required for projects of $30,000 or more.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
+      { text: "Inspections: text SCHEDULE to 888-365-1710, email inspections@cabarruscounty.us, or leave a voicemail at 704-920-2128.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
+    ],
+  },
+  union: {
+    id: "union",
+    name: "Union County, NC",
+    coverage: "directory",
+    officeLabel: "Union County Building Code Enforcement",
+    officeUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement",
+    note: "Online plan review and permitting is at ucinspect.unioncountync.gov.",
+    facts: [
+      { text: "A new building code enforcement fee schedule took effect August 1, 2025. Amounts are in the county's downloadable fee schedule.", sourceUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement", checkedOn: "2026-11-15" },
+      { text: "The county aims to complete inspections typically the day requested.", sourceUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement", checkedOn: "2026-11-15" },
+    ],
+  },
+  robeson: {
+    id: "robeson",
+    name: "Robeson County, NC",
+    coverage: "directory",
+    officeLabel: "Robeson County Community Development (Planning, Building, Code Enforcement)",
+    officeUrl: "https://www.robesoncountync.gov/departments/community-development/",
+    officePhone: "910-272-6540",
+    officeAddress: "701 N. Elm Street, Lumberton, NC 28358",
+    note: "Pembroke is a town inside Robeson County. Whether the town or the county handles its permits is not confirmed. Zoning office: 910-272-6521.",
+    facts: [
+      { text: "The county department issues building, electrical, plumbing, mechanical and other permits, and also issues zoning permits.", sourceUrl: "https://www.robesoncountync.gov/departments/community-development/", checkedOn: "2026-11-15" },
+      { text: "Permits cannot be issued after 4:00 pm. Inspections line: 910-272-6540.", sourceUrl: "https://www.robesoncountync.gov/departments/community-development/", checkedOn: "2026-11-15" },
+    ],
   },
 };
 

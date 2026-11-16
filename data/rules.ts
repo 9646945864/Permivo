@@ -688,4 +688,15 @@ export const STATE_RULES: StateRule[] = [
     status: "partly",
     note: "Some county pages still say $30,000. The statute text read here says $40,000. Confirm the current amount with your county before relying on it.",
   },
+  {
+    id: "S5",
+    checkedOn: "2026-11-16",
+    title: "Residential plan review checklist (state guidance)",
+    summary:
+      "For one- and two-family homes, the State Fire Marshal's guidance describes what a local plan review should look at: drawings to scale (at least 1/8 inch) on sheets at least 11 by 17 inches with the designer's name and contact; a plot plan with building location, setbacks, easements and property lines; footing and foundation details; floor plans with room dimensions and square footage; front, side and rear elevations with heights; and floor, wall and roof framing details with loads, member sizes, spans and bracing. It says no electrical, mechanical or plumbing plans are needed for the review, and truss spec sheets are handled in the field.",
+    sourceLabel: "NC Office of State Fire Marshal, Residential Plan Review Checklist Guidance (S.L. 2019-174)",
+    sourceUrl: "https://ncosfm.gov/guidance-papers/sl-2019-174-residential-plan-review-checklist-guidance/open",
+    status: "partly",
+    note: "This is guidance for jurisdictions that choose to offer residential plan review, not a law. It says it may not reflect the latest code. Each county uses its own checklist, and it applies only to projects that go through plan review.",
+  },
 ];

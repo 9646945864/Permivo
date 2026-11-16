@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { COVERED_COUNTIES, DIRECTORY_COUNTIES, NC_COUNTIES } from "../../data/ncCounties";
-import { JURISDICTIONS, type JurisdictionId } from "../../data/rules";
+import { JURISDICTIONS, STATE_RULES, type JurisdictionId } from "../../data/rules";
 import { FEEDBACK_URL } from "../../data/site";
 
 const KEY = "permivo-place-v1";
@@ -146,5 +146,46 @@ export function ReportLink({ id }: { id: string }) {
     >
       Report a problem with {id}
     </a>
+  );
+}
+
+export function StatewideRules() {
+  return (
+    <section className="mt-8" aria-labelledby="state-heading">
+      <h2 id="state-heading" className="text-lg font-medium text-gray-900">
+        North Carolina rules (all counties)
+      </h2>
+      <p className="mt-1 text-sm text-gray-600">
+        These come from state law, not from a county. A county can add its own requirements on top. Not legal advice.
+      </p>
+      <ul className="mt-3 space-y-3">
+        {STATE_RULES.map((r) => (
+          <li key={r.id} className="rounded-lg border border-orange-100 bg-white p-4">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-medium text-gray-900">{r.title}</h3>
+              <span
+                className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${
+                  r.status === "verified"
+                    ? "bg-green-100 text-green-900 border-green-300"
+                    : "bg-yellow-100 text-yellow-900 border-yellow-300"
+                }`}
+              >
+                {r.status === "verified" ? "Verified" : "Partly verified"}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-gray-700">{r.summary}</p>
+            {r.note && <p className="mt-1 text-sm text-gray-600">{r.note}</p>}
+            <p className="mt-2 text-sm">
+              <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+                {r.sourceLabel}
+              </a>
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Checked {r.checkedOn} · <ReportLink id={r.id} />
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -62,6 +62,11 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Permit applications and plan review applications are done online through the county's ePermits portal.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/plan-review/", checkedOn: "2026-11-15" },
       { text: "Permit Center hours: Monday to Friday 8:00am to 5:00pm; permits are issued 8:00am to 4:00pm. Inspections: 828-465-8399.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-15" },
       { text: "A county info sheet (dated 2014, so may be out of date) says a detached accessory structure needs both a zoning permit and a building permit, and a scaled footprint drawing for zoning.", sourceUrl: "https://www.catawbacountync.gov/site/assets/files/2490/residential-accessory.pdf", checkedOn: "2026-11-15" },
+      { text: "For a licensed general contractor building an accessory building, the county lists these documents: a Building Permit Application, water and sewer or septic and well approval, an Erosion Control Affidavit, and zoning permit approval. Alterations need a Building Permit Application, water and sewer or septic and well approval, a Workers' Compensation Affidavit and zoning approval. Whether a deck or addition falls under Alterations or another type is not stated.", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-licensed-general-contractors/", checkedOn: "2026-11-16" },
+      { text: "The county advises submitting all approvals, applications and forms at once to avoid delays.", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-licensed-general-contractors/", checkedOn: "2026-11-16" },
+      { text: "A Designation of Lien Agent is listed for manufactured home, modular and single family dwelling projects. It is not listed for accessory buildings or alterations on that page.", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-licensed-general-contractors/", checkedOn: "2026-11-16" },
+      { text: "County plan review covers commercial projects. For residential work, townhouses require a full plan review and duplexes get a counter review for tenant separation. Decks, additions and garages are not mentioned. All plans are reviewed electronically in ePermits.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/plan-review/", checkedOn: "2026-11-16" },
+      { text: "For septic or wells, the county directs applicants to its Environmental Health Department for approval before the building permit.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-16" },
     ],
   },
   cabarrus: {
@@ -102,10 +107,16 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     coverage: "directory",
     officeLabel: "Union County Building Code Enforcement",
     officeUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement",
+    officePhone: "704-283-3816",
+    officeEmail: "ucinspections@unioncountync.gov",
+    officeAddress: "500 N. Main St., Suite 47, Monroe, NC 28112",
     note: "Online plan review and permitting is at ucinspect.unioncountync.gov.",
     facts: [
       { text: "A new building code enforcement fee schedule took effect August 1, 2025. Amounts are in the county's downloadable fee schedule.", sourceUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement", checkedOn: "2026-11-15" },
       { text: "The county aims to complete inspections typically the day requested.", sourceUrl: "https://www.unioncountync.gov/government/departments-a-e/building-code-enforcement", checkedOn: "2026-11-15" },
+      { text: "Residential and commercial building permits, including accessory structures, are applied for online at the county's online plan review and permitting service. An account is required to apply and to schedule inspections.", sourceUrl: "https://ucinspect.unioncountync.gov/evolvepublic/", checkedOn: "2026-11-16" },
+      { text: "The online service also handles electrical, HVAC, gas and plumbing permits, and zoning compliance for new businesses.", sourceUrl: "https://ucinspect.unioncountync.gov/evolvepublic/", checkedOn: "2026-11-16" },
+      { text: "The county's commercial submittal requirements say zoning approval is required for commercial applications. Whether it applies to residential work is not stated.", sourceUrl: "https://www.unioncountync.gov/home/showpublisheddocument/686/639106393738170000", checkedOn: "2026-11-16" },
     ],
   },
   robeson: {

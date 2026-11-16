@@ -83,10 +83,10 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Permits are tracked in the county's Accela portal. The county's permit form lists decks under both Addition and Accessory Structure permit types.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
       { text: "A lien filing is required for projects of $30,000 or more.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
       { text: "Residential building permits for accessory structures (such as a detached garage) and additions (such as a deck, room or screened porch) are applied for online in Accela.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-15" },
-      { text: "The county's plan review service is described as for all new primary residences and for commercial projects. Whether decks, additions or garages go through it is not stated.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
+      { text: "The county's plan review page says plan review is for all new primary residences and all new and renovation commercial projects. Decks, additions and garages are not named. Residential reviews take 5-7 business days depending on zoning.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
       { text: "Plan review files must be PDFs, with building and site reviews submitted separately and different document types not combined in one PDF.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
-      { text: "Development Ordinance (copy dated 2021 amendments, so confirm it is current), Section 6-14: an uncovered, unenclosed deck, terrace or patio may extend into a required setback, but never closer than 5 feet to any property line.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
-      { text: "Development Ordinance Section 7-3: an accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Impervious and structural coverage limits also apply.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "Development Ordinance (copy with amendments through January 2022, so confirm it is current), Section 6-14: an uncovered, unenclosed deck, terrace or patio may extend into a required setback, but never closer than 5 feet to any property line.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "Development Ordinance Section 7-3 (copy with amendments through January 2022): an accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Impervious and structural coverage limits also apply.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
       { text: "Development Ordinance Section 12-3: a Zoning Compliance Permit is required before a building is erected, altered or enlarged. Section 12-4: if the lot has a septic system or well, Cabarrus Health Alliance approval comes before zoning and building permits.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
       { text: "County Planning and Zoning fee schedule (approved April 22, 2025, effective July 1, 2025): Residential Addition Permit $225, Residential Accessory Structure Permit $225, Accessory Structure with Living Space $275, Residential Certificate of Occupancy zoning inspection $150. Development begun without the right permits has its fees doubled. These are zoning fees and do not include building permit fees.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning/Zoning-Division", checkedOn: "2026-11-15" },
       { text: "The county's zoning FAQ says a plot plan of the property with the proposed improvements must be submitted for zoning permitting. Setbacks, impervious area, water buffers, watershed and floodplain standards are reviewed from it. Setbacks are measured from the road right-of-way, not the edge of pavement.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
@@ -500,14 +500,14 @@ export const RULES: Rule[] = [
     jurisdiction: "cabarrus",
     checkedOn: "2026-11-16",
     kind: "step",
-    projects: ["addition", "garage"],
+    projects: ["deck","addition","garage"],
     where: "county",
-    title: "County plan review (scope for additions and garages not stated)",
-    statedTime: "5-7 business days (Plan Review page); 2-5 business days (Plan Review Instructions)",
+    title: "County plan review is listed only for new primary residences and commercial projects",
+    statedTime: "5-7 business days for residential reviews, depending on zoning (Plan Review page); 2-5 business days in the Plan Review Instructions PDF",
     sourceLabel: "Cabarrus County, Plan Review page and Plan Review Instructions",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review",
     status: "partly",
-    note: "The county describes plan review as for all new primary residences and commercial projects. Whether additions or garages are included is not stated. The two county documents give different review times, and when the clock starts is not stated. Files must be PDFs, with building and site reviews submitted separately.",
+    note: "The county's Plan Review page says plan review is for all new primary residences and all new and renovation commercial projects. Decks, additions and detached garages are not on that list, which suggests they are a standard building permit, but the county has not said so in writing. The page says the residential review time depends on zoning, and the Instructions PDF gives a different range. When the plan review path applies, submit through Accela's Digital Plan Room: PDFs only (100 MB maximum, no encrypted files), building and site reviews submitted separately, and no new uploads in the middle of a review cycle.",
   },
 
   {
@@ -522,7 +522,7 @@ export const RULES: Rule[] = [
     sourceLabel: "Cabarrus County, Zoning FAQ; Development Ordinance Section 12-4",
     sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ",
     status: "verified",
-    note: "If the lot has a septic system or well, Cabarrus Health Alliance approval comes before the zoning permit. The county names additions and accessory buildings among the projects it checks for effects on septic systems.",
+    note: "If the lot has a septic system or well, Cabarrus Health Alliance approval comes before the zoning permit. The Health Alliance inspects existing septic systems for zoning and building permits for structural additions, accessory structures, accessory dwelling units, replacement mobile homes and swimming pools. Decks are not named in that list.",
   },
 
   {
@@ -534,10 +534,10 @@ export const RULES: Rule[] = [
     where: "outside",
     title: "Deck setback: never closer than 5 feet to a property line",
     statedTime: "Not a review step",
-    sourceLabel: "Cabarrus County Development Ordinance Section 6-14 (copy with 2021 amendments)",
+    sourceLabel: "Cabarrus County Development Ordinance Section 6-14 (copy with amendments through January 2022)",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting",
     status: "partly",
-    note: "An uncovered, unenclosed deck may extend into a required setback but never closer than 5 feet to any property line. The ordinance copy is dated 2021, so confirm it is current.",
+    note: "An uncovered, unenclosed deck may extend into a required setback but never closer than 5 feet to any property line. The ordinance copy checked has amendments through January 2022, so confirm it is current.",
   },
 
   {
@@ -549,10 +549,10 @@ export const RULES: Rule[] = [
     where: "outside",
     title: "Detached garage setbacks and height",
     statedTime: "Not a review step",
-    sourceLabel: "Cabarrus County Development Ordinance Section 7-3 (copy with 2021 amendments)",
+    sourceLabel: "Cabarrus County Development Ordinance Section 7-3 (copy with amendments through January 2022)",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting",
     status: "partly",
-    note: "An accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Setbacks are measured from the road right-of-way. Impervious and coverage limits apply. The ordinance copy is dated 2021, so confirm it is current.",
+    note: "An accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Setbacks are measured from the road right-of-way. Impervious and coverage limits apply. The ordinance copy checked has amendments through January 2022, so confirm it is current.",
   },
 
   {
@@ -582,7 +582,7 @@ export const RULES: Rule[] = [
     sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
     status: "unverified",
-    note: "Asked of Construction Standards. Until the county answers in writing, treat the plan review steps above as not confirmed.",
+    note: "The county's Plan Review page lists only new primary residences and commercial projects, so a deck, addition or garage is likely a standard building permit. Asked of Construction Standards for a written answer. Until the county confirms, treat this as not confirmed.",
   },
 
   {

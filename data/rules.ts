@@ -62,11 +62,22 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officePhone: "704-920-2128",
     officeEmail: "construction2222@cabarruscounty.us",
     officeAddress: "65 Church St S, Concord, NC 28025",
-    note: "Zoning is a separate county office (704-920-2141). Concord, Kannapolis and other towns may handle zoning themselves.",
+    note: "Zoning is a separate county office (704-920-2141) and covers unincorporated Cabarrus County only. Properties inside Concord, Kannapolis and other towns follow the town's own rules.",
     facts: [
       { text: "The county says a zoning permit is needed for additions, accessory structures such as a garage or storage building, and for installing or adding on to a deck or patio.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
       { text: "Permits are tracked in the county's Accela portal. The county's permit form lists decks under both Addition and Accessory Structure permit types.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
       { text: "A lien filing is required for projects of $30,000 or more.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
+      { text: "Residential building permits for accessory structures (such as a detached garage) and additions (such as a deck, room or screened porch) are applied for online in Accela.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-15" },
+      { text: "The county's plan review service is described as for all new primary residences and for commercial projects. Whether decks, additions or garages go through it is not stated.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
+      { text: "Plan review files must be PDFs, with building and site reviews submitted separately and different document types not combined in one PDF.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
+      { text: "Development Ordinance (copy dated 2021 amendments, so confirm it is current), Section 6-14: an uncovered, unenclosed deck, terrace or patio may extend into a required setback, but never closer than 5 feet to any property line.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "Development Ordinance Section 7-3: an accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Impervious and structural coverage limits also apply.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "Development Ordinance Section 12-3: a Zoning Compliance Permit is required before a building is erected, altered or enlarged. Section 12-4: if the lot has a septic system or well, Cabarrus Health Alliance approval comes before zoning and building permits.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
+      { text: "County Planning and Zoning fee schedule (approved April 22, 2025, effective July 1, 2025): Residential Addition Permit $225, Residential Accessory Structure Permit $225, Accessory Structure with Living Space $275, Residential Certificate of Occupancy zoning inspection $150. Development begun without the right permits has its fees doubled. These are zoning fees and do not include building permit fees.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning/Zoning-Division", checkedOn: "2026-11-15" },
+      { text: "The county's zoning FAQ says a plot plan of the property with the proposed improvements must be submitted for zoning permitting. Setbacks, impervious area, water buffers, watershed and floodplain standards are reviewed from it. Setbacks are measured from the road right-of-way, not the edge of pavement.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
+      { text: "The county's zoning FAQ says a zoning permit is required for a shed, carport, garage or gazebo, and that building permits may also be needed depending on the size of the structure. Cabarrus Health Alliance approval is required before a zoning permit for projects such as additions and accessory buildings on lots with septic.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
+      { text: "The county's Development Ordinance applies only to unincorporated Cabarrus County. For a property in a municipality or its extra-territorial jurisdiction (for example Concord or Kannapolis), the town's own development rules apply.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
+      { text: "Stated residential plan review time conflicts between county documents: 5-7 business days on the Plan Review page, 2-5 business days in the Plan Review Instructions PDF. Other departments' reviews can affect total time.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/planning-and-development/construction-standards/documents/plan-review-instructions.pdf", checkedOn: "2026-11-15" },
       { text: "Inspections: text SCHEDULE to 888-365-1710, email inspections@cabarruscounty.us, or leave a voicemail at 704-920-2128.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
     ],
   },
@@ -357,3 +368,62 @@ export function rulesFor(
       (r.where === "county" || location === "city")
   );
 }
+
+// Statewide rules. These come from North Carolina statutes and apply in every county.
+// A county can be stricter in some cases, so each rule says so where the statute allows it.
+export interface StateRule {
+  id: string;
+  checkedOn: string;
+  title: string;
+  summary: string;
+  sourceLabel: string;
+  sourceUrl: string;
+  status: "verified" | "partly";
+  note?: string;
+}
+
+export const STATE_RULES: StateRule[] = [
+  {
+    id: "S1",
+    checkedOn: "2026-11-15",
+    title: "A building permit expires if work does not start, or stops",
+    summary:
+      "A permit expires six months after it is issued if the work has not started. If work starts and then stops for 12 months, the permit expires immediately. No work may continue under an expired permit until a new one is secured.",
+    sourceLabel: "N.C. Gen. Stat. 160D-1111, Expiration of building permits",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_160D/GS_160D-1111.html",
+    status: "verified",
+    note: "The statute lets a county set a shorter time than six months, so check your county's own limit.",
+  },
+  {
+    id: "S2",
+    checkedOn: "2026-11-15",
+    title: "A general contractor license is needed at $40,000 or more",
+    summary:
+      "A person or firm who builds or manages work costing $40,000 or more for a fee must hold a North Carolina general contractor license.",
+    sourceLabel: "N.C. Gen. Stat. 87-1, Definition; exempt from provisions",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_87/GS_87-1.html",
+    status: "verified",
+  },
+  {
+    id: "S3",
+    checkedOn: "2026-11-15",
+    title: "Owners building their own home",
+    summary:
+      "The license requirement does not apply to an owner who builds or alters a building on their own land if it is intended solely for their own and their family's occupancy and they follow G.S. 87-14. If the building is not occupied solely by the owner for at least 12 months after completion, the law presumes it was not intended for their own occupancy. G.S. 87-14 also requires the owner to sign an affidavit and personally superintend the work.",
+    sourceLabel: "N.C. Gen. Stat. 87-1(b)(2) and 87-14",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/PDF/ByArticle/Chapter_87/Article_1.pdf",
+    status: "verified",
+    note: "Counties publish their own owner affidavit form.",
+  },
+  {
+    id: "S4",
+    checkedOn: "2026-11-15",
+    title: "Lien agent for larger projects",
+    summary:
+      "The owner must designate a lien agent when the improvements cost $40,000 or more. The statute exempts improvements to an existing single-family home that the owner lives in, including adding an accessory building for that home.",
+    sourceLabel: "N.C. Gen. Stat. 44A-11.1, Designation of lien agent",
+    sourceUrl: "https://house.ncleg.gov/EnactedLegislation/Statutes/PDF/BySection/Chapter_44A/GS_44A-11.1.pdf",
+    status: "partly",
+    note: "Some county pages still say $30,000. The statute text read here says $40,000. Confirm the current amount with your county before relying on it.",
+  },
+];

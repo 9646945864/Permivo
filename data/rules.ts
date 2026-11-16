@@ -3,7 +3,7 @@
 // Only mark a rule "verified" when an official county or city page, or a written
 // agency reply, supports it. Third-party guides are leads, not sources.
 // Keep real addresses and personal data out of this public repository.
-// Last updated: November 2026, after the reply from Mecklenburg County CIRC.
+// Last updated: November 16, 2026, after the second written reply from Mecklenburg County CIRC and the Cabarrus County research.
 
 export type ProjectType = "deck" | "addition" | "garage" | "trade";
 export type Location = "city" | "outside";
@@ -14,8 +14,16 @@ export interface Jurisdiction {
   id: JurisdictionId;
   name: string;
   // "verified" = rules checked against official sources with dates.
+  // "partial" = rules and checklist are shown with their own statuses, but key answers are still pending.
   // "directory" = only the office and how to reach it, no verified rules yet.
-  coverage: "verified" | "directory";
+  coverage: "verified" | "partial" | "directory";
+  // Planner wording for the two location choices, and which one starts selected.
+  locationLabels?: { city: string; outside: string };
+  defaultLocation?: Location;
+  // Who the user should confirm with. Shown in the planner banner.
+  confirmWith?: string;
+  // Shown for coverage "partial": what is still waiting on the agency.
+  partialNote?: string;
   officeLabel: string;
   officeUrl: string;
   officePhone?: string;
@@ -35,6 +43,9 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officeUrl: "https://code.mecknc.gov",
     officePhone: "980-314-2633",
     note: "Includes the City of Charlotte lot review for projects inside city limits.",
+    locationLabels: { city: "Inside Charlotte city limits", outside: "Elsewhere in the county" },
+    defaultLocation: "city",
+    confirmWith: "Mecklenburg County Code Enforcement and the City of Charlotte",
   },
   catawba: {
     id: "catawba",
@@ -56,12 +67,16 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
   cabarrus: {
     id: "cabarrus",
     name: "Cabarrus County, NC",
-    coverage: "directory",
+    coverage: "partial",
     officeLabel: "Cabarrus County Construction Standards",
     officeUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
     officePhone: "704-920-2128",
     officeEmail: "construction2222@cabarruscounty.us",
     officeAddress: "65 Church St S, Concord, NC 28025",
+    locationLabels: { city: "Inside a town (Concord, Kannapolis, others)", outside: "Unincorporated Cabarrus County" },
+    defaultLocation: "outside",
+    confirmWith: "Cabarrus County Construction Standards (704-920-2128), the county Zoning office (704-920-2141), or your town's planning office",
+    partialNote: "Cabarrus County is partly verified. Its zoning steps and fees come from county pages. Whether a stand-alone deck, addition or garage needs plan review, the order of the zoning and building steps, and building permit fees are still waiting on the county's written answer.",
     note: "Zoning is a separate county office (704-920-2141) and covers unincorporated Cabarrus County only. Properties inside Concord, Kannapolis and other towns follow the town's own rules.",
     facts: [
       { text: "The county says a zoning permit is needed for additions, accessory structures such as a garage or storage building, and for installing or adding on to a deck or patio.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
@@ -117,7 +132,7 @@ export interface Rule {
   checkedOn: string; // YYYY-MM-DD, the last day this rule was checked against its source
   kind: "step" | "question"; // "question" = an open item that needs an agency answer
   projects: ProjectType[];
-  where: "city" | "county"; // "city" = only inside Charlotte city limits; "county" = whole county
+  where: "city" | "county" | "outside"; // "city" = only inside a city or town; "outside" = only outside one; "county" = everywhere in the county
   title: string;
   statedTime: string;
   sourceLabel: string;
@@ -149,6 +164,11 @@ const CITY_PAGE =
 const COUNTY_PLAN_REVIEW = "https://code.mecknc.gov/service/residential-plan-review-services";
 const COUNTY_PERMITTING = "https://code.mecknc.gov/permitting";
 const COUNTY_ACA = "https://code.mecknc.gov/customer-tools/aca";
+const COUNTY_TOTAL =
+  "About 3 weeks for the whole county process (intake, review, zoning approval, permitting). Review itself is about 7 days after acceptance.";
+const COUNTY_DECK_DOCS = "https://mecknc.widen.net/s/6srfhqzn5z/deck-brochure";
+const COUNTY_ACCESSORY_GUIDE = "https://mecknc.widen.net/s/n2wcpjhbm6/aca-submitting-a-residential-accessory-structure-application";
+const COUNTY_ADDITION_GUIDE = "https://mecknc.widen.net/s/lxvdhvmrgd/aca-submitting-a-residential-addition-application";
 const COUNTY_RPR = "https://code.mecknc.gov/plan-review/residential";
 const COUNTY_SITE = "https://code.mecknc.gov";
 const REBIC_2023 = "https://rebic.com/two-for-tuesday-may-2-2023";
@@ -175,31 +195,46 @@ export const RULES: Rule[] = [
   {
     id: "R2",
     jurisdiction: "mecklenburg",
-    checkedOn: "2026-11-12",
+    checkedOn: "2026-11-16",
     kind: "step",
     projects: ["deck"],
     where: "county",
-    title: "County building permit",
-    statedTime: COUNTY_AVG + " (if plan review applies)",
-    sourceLabel: "Mecklenburg Code Enforcement, residential plan review; CIRC email, Nov 2026",
-    sourceUrl: COUNTY_PLAN_REVIEW,
-    status: "partly",
-    note: "The 3-week average is from the county’s written reply. Whether a deck goes through plan review is not confirmed.",
+    title: "County building permit and inspections (no plan review)",
+    statedTime: COUNTY_TOTAL,
+    sourceLabel: "Mecklenburg Code Enforcement written reply, Nov 2026; county Deck Brochure and AccelaMeck guides",
+    sourceUrl: COUNTY_ADDITION_GUIDE,
+    status: "verified",
+    note: "The county confirmed in writing that a stand-alone deck, or a deck or screen porch addition, needs a building permit and inspections. It is submitted through AccelaMeck, the county's online system, and does not go through plan review. The county says to allow at least three weeks for the whole process: intake, review, zoning approval and permitting.",
   },
   {
     id: "R3",
     jurisdiction: "mecklenburg",
-    checkedOn: "2026-11-12",
+    checkedOn: "2026-11-16",
     kind: "step",
     projects: ["deck"],
     where: "county",
-    title: "County plan review: a stand-alone deck is not on the county’s list",
-    statedTime: "Not applicable if plan review is not required",
-    sourceLabel: "Mecklenburg Code Enforcement, Residential Plan Review",
-    sourceUrl: COUNTY_RPR,
-    status: "partly",
-    note: "The county’s plan review list excludes decks and screen porches from its enclosed-addition trigger and does not name decks otherwise. That is not a statement that decks need no permit or inspection. Converting a deck into an enclosed room does trigger plan review. Confirm with the county.",
+    title: "County plan review is not required for a deck",
+    statedTime: "Not applicable. Plan review is not required for a deck.",
+    sourceLabel: "Mecklenburg Code Enforcement written reply, Nov 2026; Residential Plan Review",
+    sourceUrl: COUNTY_DECK_DOCS,
+    status: "verified",
+    note: "The county's plan review list excludes decks and screen porches from its enclosed-addition trigger, and the county confirmed in writing that decks need a building permit but not plan review. Converting a deck into an enclosed room does trigger plan review.",
   },
+  {
+    id: "R15",
+    jurisdiction: "mecklenburg",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck"],
+    where: "county",
+    title: "Engineer's letter only for engineered materials or non-prescriptive decks",
+    statedTime: "Not a review step",
+    sourceLabel: "Mecklenburg Code Enforcement written reply, Nov 2026",
+    sourceUrl: COUNTY_DECK_DOCS,
+    status: "verified",
+    note: "The county confirmed in writing that a deck built prescriptively does not need an engineer's letter. Engineered materials or non-prescriptive methods do need one.",
+  },
+
   {
     id: "R4",
     jurisdiction: "mecklenburg",
@@ -231,16 +266,16 @@ export const RULES: Rule[] = [
   {
     id: "R6",
     jurisdiction: "mecklenburg",
-    checkedOn: "2026-11-12",
+    checkedOn: "2026-11-16",
     kind: "step",
     projects: ["addition"],
     where: "county",
     title: "County plan review",
-    statedTime: COUNTY_AVG,
+    statedTime: COUNTY_TOTAL,
     sourceLabel: "Mecklenburg Residential Plan Review; CIRC email, Nov 2026",
     sourceUrl: COUNTY_RPR,
     status: "verified",
-    note: "Plan review applies to an enclosed addition that adds 100 sq. ft. or more to the footprint, and to an added story. Smaller additions: confirm with the county. The county’s page states a goal of 7 days on average after acceptance, which differs from the 3-week average CIRC reported. The 3 weeks is an average, not a guarantee.",
+    note: "Plan review applies to an enclosed addition that adds 100 sq. ft. or more to the footprint, and to an added story. The county confirmed in writing that an addition of 100 sq. ft. or less needs a building permit but not plan review. The 7-day goal is the lead time for the review itself. The county says to allow at least three weeks for intake, review, zoning approval and permitting. Projects that need plan review must follow the county's plan review checklist.",
   },
   {
     id: "R7",
@@ -287,21 +322,21 @@ export const RULES: Rule[] = [
   {
     id: "R10",
     jurisdiction: "mecklenburg",
-    checkedOn: "2026-11-12",
+    checkedOn: "2026-11-16",
     kind: "step",
     projects: ["garage"],
     where: "county",
     title: "County building permit (plan review only for multi-story garages or garages with living space)",
-    statedTime: COUNTY_AVG + " (if plan review applies)",
+    statedTime: COUNTY_TOTAL,
     sourceLabel: "Mecklenburg Residential Plan Review",
-    sourceUrl: COUNTY_RPR,
+    sourceUrl: COUNTY_ACCESSORY_GUIDE,
     status: "verified",
-    note: "The county lists new multi-story detached garages and any garage with living space for plan review. A one-story detached garage with no living space is not on the list. It still needs a permit. Confirm with the county.",
+    note: "The county lists new multi-story detached garages and any garage with living space for plan review. The county confirmed in writing that a one-story detached garage with no living space is a standard building permit, submitted through AccelaMeck, with no plan review.",
   },
   {
     id: "R11",
     jurisdiction: "mecklenburg",
-    checkedOn: "2026-11-12",
+    checkedOn: "2026-11-16",
     kind: "step",
     projects: ["addition", "garage"],
     where: "county",
@@ -310,7 +345,7 @@ export const RULES: Rule[] = [
     sourceLabel: "Mecklenburg Residential Plan Review",
     sourceUrl: COUNTY_RPR,
     status: "verified",
-    note: "Plans are checked against the submittal requirements before acceptance. If information is missing, the county emails what is needed. The review clock starts at acceptance, so time before acceptance is not in the stated time.",
+    note: "Plans are checked against the submittal requirements before acceptance. If information is missing, the county emails what is needed. The review clock starts at acceptance, so time before acceptance is not in the 7-day goal. The county says whole-process time is at least three weeks.",
   },
   {
     id: "R12",
@@ -354,6 +389,231 @@ export const RULES: Rule[] = [
     status: "verified",
     note: "Zoning $155. Stormwater $55 for additions, decks, sheds and detached structures. Urban forestry $180 (Tier 1) or $350 (Tier 2). A stand-alone detached garage is not clearly listed. The fee schedule is for projects passing gateway July 1, 2026 to June 30, 2027.",
   },
+
+  {
+    id: "C1",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck"],
+    where: "outside",
+    title: "County zoning permit (Zoning Compliance Permit)",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Zoning Permitting; Development Ordinance Section 12-3",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting",
+    status: "verified",
+    note: "The county says a zoning permit is needed to install or add on to a deck or patio, and the ordinance requires a Zoning Compliance Permit before a building is erected, altered or enlarged. A plot plan with the proposed work is required. The fee schedule lists addition and accessory structure permits at $225 but does not list a deck separately, so the deck fee is not confirmed.",
+  },
+
+  {
+    id: "C2",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["addition"],
+    where: "outside",
+    title: "County zoning permit (Zoning Compliance Permit)",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Zoning Permitting; Planning and Zoning Fee Schedule (effective July 1, 2025)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning/Zoning-Division",
+    status: "verified",
+    note: "The county says a zoning permit is needed for additions. The fee schedule lists a Residential Addition Permit at $225. A plot plan is required. Fees double if work starts without the right permits.",
+  },
+
+  {
+    id: "C3",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["garage"],
+    where: "outside",
+    title: "County zoning permit (Zoning Compliance Permit)",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Zoning FAQ; Planning and Zoning Fee Schedule (effective July 1, 2025)",
+    sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ",
+    status: "verified",
+    note: "The county's zoning FAQ says a shed, carport, garage or gazebo needs a zoning permit. The fee schedule lists a Residential Accessory Structure Permit at $225, or $275 for an accessory structure with living space. A plot plan is required.",
+  },
+
+  {
+    id: "C4",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck", "addition", "garage"],
+    where: "city",
+    title: "Town zoning review (Concord, Kannapolis and other towns)",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Zoning FAQ",
+    sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ",
+    status: "partly",
+    note: "The county's zoning rules apply only to unincorporated Cabarrus County. Inside a town or its extra-territorial area, the town's own development rules apply, so the zoning permit comes from the town, not the county. The steps, fees and times for each town are not confirmed.",
+  },
+
+  {
+    id: "C5",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck"],
+    where: "county",
+    title: "County building permit, applied for in Accela",
+    statedTime: "Not stated for decks",
+    sourceLabel: "Cabarrus County, Construction Standards online access; homeowner permit guide",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "partly",
+    note: "The county applies for additions, which it describes as including a deck, room or screened porch, through Accela. Whether a stand-alone deck has any exemption, and whether it goes through plan review, is not confirmed.",
+  },
+
+  {
+    id: "C6",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["addition"],
+    where: "county",
+    title: "County building permit, applied for in Accela",
+    statedTime: "Not stated for additions",
+    sourceLabel: "Cabarrus County, Construction Standards online access",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "partly",
+    note: "Residential additions are applied for through Accela. Whether an addition goes through plan review is not confirmed.",
+  },
+
+  {
+    id: "C7",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["garage"],
+    where: "county",
+    title: "County building permit, applied for in Accela",
+    statedTime: "Not stated for garages",
+    sourceLabel: "Cabarrus County, Construction Standards online access; Zoning FAQ",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "partly",
+    note: "Accessory structures such as a detached garage are applied for through Accela. The zoning FAQ says a building permit may also be needed depending on the size of the structure, but the size line is not stated.",
+  },
+
+  {
+    id: "C8",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["addition", "garage"],
+    where: "county",
+    title: "County plan review (scope for additions and garages not stated)",
+    statedTime: "5-7 business days (Plan Review page); 2-5 business days (Plan Review Instructions)",
+    sourceLabel: "Cabarrus County, Plan Review page and Plan Review Instructions",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review",
+    status: "partly",
+    note: "The county describes plan review as for all new primary residences and commercial projects. Whether additions or garages are included is not stated. The two county documents give different review times, and when the clock starts is not stated. Files must be PDFs, with building and site reviews submitted separately.",
+  },
+
+  {
+    id: "C9",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck", "addition", "garage"],
+    where: "outside",
+    title: "Septic or well approval before the zoning permit",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Zoning FAQ; Development Ordinance Section 12-4",
+    sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ",
+    status: "verified",
+    note: "If the lot has a septic system or well, Cabarrus Health Alliance approval comes before the zoning permit. The county names additions and accessory buildings among the projects it checks for effects on septic systems.",
+  },
+
+  {
+    id: "C10",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck"],
+    where: "outside",
+    title: "Deck setback: never closer than 5 feet to a property line",
+    statedTime: "Not a review step",
+    sourceLabel: "Cabarrus County Development Ordinance Section 6-14 (copy with 2021 amendments)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting",
+    status: "partly",
+    note: "An uncovered, unenclosed deck may extend into a required setback but never closer than 5 feet to any property line. The ordinance copy is dated 2021, so confirm it is current.",
+  },
+
+  {
+    id: "C11",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["garage"],
+    where: "outside",
+    title: "Detached garage setbacks and height",
+    statedTime: "Not a review step",
+    sourceLabel: "Cabarrus County Development Ordinance Section 7-3 (copy with 2021 amendments)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting",
+    status: "partly",
+    note: "An accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Setbacks are measured from the road right-of-way. Impervious and coverage limits apply. The ordinance copy is dated 2021, so confirm it is current.",
+  },
+
+  {
+    id: "C12",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "step",
+    projects: ["deck", "addition", "garage"],
+    where: "outside",
+    title: "Zoning final inspection and its fee",
+    statedTime: "Not stated",
+    sourceLabel: "Cabarrus County, Planning and Zoning Fee Schedule (effective July 1, 2025)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning/Zoning-Division",
+    status: "partly",
+    note: "The fee schedule lists a $150 Certificate of Occupancy zoning inspection for residential work. One permit record seen also showed a zoning final inspection as required. Whether every deck, addition or garage needs it is not confirmed.",
+  },
+
+  {
+    id: "C13",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "question",
+    projects: ["deck", "addition", "garage"],
+    where: "county",
+    title: "Open question: does a stand-alone deck, addition or garage need plan review?",
+    statedTime: "Not confirmed",
+    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "unverified",
+    note: "Asked of Construction Standards. Until the county answers in writing, treat the plan review steps above as not confirmed.",
+  },
+
+  {
+    id: "C14",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "question",
+    projects: ["deck", "addition", "garage"],
+    where: "county",
+    title: "Open question: which comes first, the zoning permit or the building permit?",
+    statedTime: "Not confirmed",
+    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "unverified",
+    note: "No county page states the order. The septic and well approval is stated to come before the zoning permit.",
+  },
+
+  {
+    id: "C15",
+    jurisdiction: "cabarrus",
+    checkedOn: "2026-11-16",
+    kind: "question",
+    projects: ["deck", "addition", "garage"],
+    where: "county",
+    title: "Open question: building permit fees",
+    statedTime: "Not confirmed",
+    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
+    status: "unverified",
+    note: "The county's zoning fees are published. The building permit fee schedule was not found on the pages read.",
+  },
 ];
 
 export function rulesFor(
@@ -365,7 +625,9 @@ export function rulesFor(
     (r) =>
       r.jurisdiction === jurisdiction &&
       r.projects.includes(project) &&
-      (r.where === "county" || location === "city")
+      (r.where === "county" ||
+        (r.where === "city" && location === "city") ||
+        (r.where === "outside" && location === "outside"))
   );
 }
 

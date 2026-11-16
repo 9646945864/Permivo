@@ -28,6 +28,20 @@ export function usePlace(): [string, (p: string) => void] {
   return [place, update];
 }
 
+export function jurisdictionFor(place: string) {
+  return JURISDICTIONS[place.toLowerCase() as JurisdictionId];
+}
+
+export function PartialNote({ place }: { place: string }) {
+  const j = jurisdictionFor(place);
+  if (!j || j.coverage !== "partial" || !j.partialNote) return null;
+  return (
+    <div role="note" className="mt-4 rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-950">
+      {j.partialNote}
+    </div>
+  );
+}
+
 export function isCovered(place: string) {
   return COVERED_COUNTIES.includes(place);
 }
@@ -48,7 +62,7 @@ export function PlaceSelector({ place, onChange }: { place: string; onChange: (p
         <optgroup label="Rules available">
           {COVERED_COUNTIES.map((c) => (
             <option key={c} value={c}>
-              {c} County (verified rules)
+              {c} County ({jurisdictionFor(c)?.coverage === "verified" ? "verified rules" : "partly verified"})
             </option>
           ))}
         </optgroup>

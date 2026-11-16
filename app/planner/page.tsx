@@ -1,94 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import ToolHeader from "../components/ToolHeader";
-import { NotCovered, PlaceSelector, ReportLink, StatewideRules, isCovered, usePlace } from "../components/PlaceSelector";
-import {
-  PROJECT_LABELS,
-  STATUS_LABELS,
-  rulesFor,
-  type Location,
-  type ProjectType,
-  type Rule,
-  type Status,
-} from "../../data/rules";
+import { NotCovered, PartialNote, PlaceSelector, ReportLink, StatewideRules, isCovered, jurisdictionFor, usePlace } from "../components/PlaceSelector";
+import { useEffect, useMemo, useState } from "react";
+import { PROJECT_LABELS, STATUS_LABELS, type JurisdictionId, type Location, type ProjectType, type Status } from "../../data/rules";
+import { GROUP_LABELS, GROUP_ORDER, itemsFor } from "../../data/checklist";
+
+const STORAGE_KEY = "permivo-checklist-v1";
+const PROJECTS: ProjectType[] = ["deck", "addition", "garage"];
 
 const STATUS_STYLES: Record<Status, string> = {
   verified: "bg-green-100 text-green-900 border-green-300",
   partly: "bg-yellow-100 text-yellow-900 border-yellow-300",
   likely: "bg-blue-100 text-blue-900 border-blue-300",
-  unverified: "bg-red-100 text-red-900 border-red-300",
+  unverified: "bg-orange-100 text-orange-900 border-orange-300",
 };
 
-const PROJECTS = Object.keys(PROJECT_LABELS) as ProjectType[];
-
-function RuleCard({ rule }: { rule: Rule }) {
-  return (
-    <li className="rounded-lg border border-orange-100 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-medium text-gray-900">{rule.title}</h3>
-        <span
-          className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[rule.status]}`}
-        >
-          {STATUS_LABELS[rule.status]}
-        </span>
-      </div>
-      <p className="mt-2 text-sm text-gray-700">
-        <span className="font-medium">Stated time:</span> {rule.statedTime}
-      </p>
-      <p className="mt-1 text-sm text-gray-600">{rule.note}</p>
-      <p className="mt-2 text-sm">
-        <a
-          href={rule.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-orange-800 underline"
-        >
-          {rule.sourceLabel}
-        </a>
-      </p>
-      <p className="mt-1 text-xs text-gray-500">
-        Checked {rule.checkedOn} · <ReportLink id={rule.id} />
-      </p>
-    </li>
-  );
-}
-
-export default function PlannerPage() {
+export default function ChecklistPage() {
   const [project, setProject] = useState<ProjectType>("deck");
   const [location, setLocation] = useState<Location>("city");
+  const [done, setDone] = useState<Record<string, boolean>>({});
+  const [loaded, setLoaded] = useState(false);
   const [place, setPlace] = usePlace();
   const covered = isCovered(place);
 
-  const rules = rulesFor(project, location);
-  const steps = rules.filter((r) => r.kind === "step");
-  const questions = rules.filter((r) => r.kind === "question");
-  const hasCountyStep = steps.some((r) => r.where === "county");
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") setDone(parsed as Record<string, boolean>);
+      }
+    } catch {
+      // ignore unreadable storage
+    }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+    } catch {
+      // storage may be unavailable
+    }
+  }, [done, loaded]);
+
+  const j = jurisdictionFor(place);
+  const labels = j?.locationLabels ?? { city: "Inside the city or town", outside: "Elsewhere in the county" };
+  useEffect(() => {
+    const d = jurisdictionFor(place)?.defaultLocation;
+    if (d) setLocation(d);
+  }, [place]);
+
+  const items = useMemo(
+    () => itemsFor(project, location, place.toLowerCase() as JurisdictionId),
+    [project, location, place]
+  );
+  const keyFor = (id: string) => `${project}:${location}:${id}`;
+  const doneCount = items.filter((i) => done[keyFor(i.id)]).length;
+  const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
+
+  function toggle(id: string) {
+    setDone((prev) => ({ ...prev, [keyFor(id)]: !prev[keyFor(id)] }));
+  }
+
+  function reset() {
+    const prefix = `${project}:${location}:`;
+    setDone((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith(prefix))));
+  }
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
-      <h1 className="tool-title text-3xl text-[#211b18]">Permivo route planner</h1>
+      <h1 className="tool-title text-3xl text-[#211b18]">Readiness checklist</h1>
       <p className="mt-1 text-gray-600">
-        See which reviews may apply to a small residential project. Rules are available for Mecklenburg County only.
+        What to have ready before you submit. Each item explains what it is, why it matters, and how to do it.
       </p>
 
-      <div
-        role="note"
-        className="mt-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950"
-      >
-        Draft rules. Nothing here is confirmed unless marked verified. Always confirm with
-        Mecklenburg County Code Enforcement and the City of Charlotte before relying on it. Not
-        legal advice.
+      <div role="note" className="mt-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
+        Draft checklist. Items marked verified come from an official county or city page. Items marked not confirmed are
+        typical plan contents. The county’s own submittal requirements decide what you must submit. A finished
+        checklist does not guarantee the county will accept your plans. Not legal advice.
       </div>
 
       <PlaceSelector place={place} onChange={setPlace} />
       {!covered && <NotCovered place={place} />}
+      {covered && <PartialNote place={place} />}
       {covered && (<>
       <section className="mt-6" aria-labelledby="project-heading">
-        <h2 id="project-heading" className="text-sm font-medium text-gray-700">
-          Project type
-        </h2>
+        <h2 id="project-heading" className="text-sm font-medium text-gray-700">Project type</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {PROJECTS.map((p) => (
             <button
@@ -97,9 +99,7 @@ export default function PlannerPage() {
               aria-pressed={project === p}
               onClick={() => setProject(p)}
               className={`rounded-md border px-3 py-2 text-sm ${
-                project === p
-                  ? "border-orange-800 bg-orange-800 text-white"
-                  : "border-orange-200 bg-white text-gray-800 hover:border-orange-400"
+                project === p ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"
               }`}
             >
               {PROJECT_LABELS[p]}
@@ -108,10 +108,8 @@ export default function PlannerPage() {
         </div>
       </section>
 
-      <section className="mt-6" aria-labelledby="location-heading">
-        <h2 id="location-heading" className="text-sm font-medium text-gray-700">
-          Where is the property?
-        </h2>
+      <section className="mt-5" aria-labelledby="location-heading">
+        <h2 id="location-heading" className="text-sm font-medium text-gray-700">Where is the property?</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {(["city", "outside"] as Location[]).map((l) => (
             <button
@@ -120,50 +118,88 @@ export default function PlannerPage() {
               aria-pressed={location === l}
               onClick={() => setLocation(l)}
               className={`rounded-md border px-3 py-2 text-sm ${
-                location === l
-                  ? "border-orange-800 bg-orange-800 text-white"
-                  : "border-orange-200 bg-white text-gray-800 hover:border-orange-400"
+                location === l ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"
               }`}
             >
-              {l === "city" ? "Inside Charlotte city limits" : "Elsewhere in the county"}
+              {l === "city" ? labels.city : labels.outside}
             </button>
           ))}
         </div>
       </section>
 
-      <section className="mt-8" aria-labelledby="steps-heading">
-        <h2 id="steps-heading" className="text-lg font-medium text-gray-900">
-          Reviews that may apply
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          The order and whether these can run at the same time are not confirmed.
-        </p>
-        <ul className="mt-3 space-y-3">
-          {steps.map((r) => (
-            <RuleCard key={r.id} rule={r} />
-          ))}
-        </ul>
-        {!hasCountyStep && (
-          <p className="mt-3 text-sm text-gray-600">
-            County steps for this project type have not been researched yet.
+      <section className="mt-6 rounded-lg border border-orange-100 bg-white p-4" aria-live="polite">
+        <div className="flex items-baseline justify-between">
+          <p className="text-sm font-medium text-gray-900">
+            {doneCount} of {items.length} ready
           </p>
-        )}
+          <p className="text-sm text-gray-600">{pct}%</p>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded bg-orange-100" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-full bg-orange-700" style={{ width: `${pct}%` }} />
+        </div>
+        <button type="button" onClick={reset} className="mt-3 rounded border border-gray-300 px-3 py-1 text-sm text-gray-700">
+          Clear ticks for this project
+        </button>
       </section>
 
-      {questions.length > 0 && (
-        <section className="mt-8" aria-labelledby="questions-heading">
-          <h2 id="questions-heading" className="text-lg font-medium text-gray-900">
-            Open questions to confirm with the agencies
-          </h2>
-          <ul className="mt-3 space-y-3">
-            {questions.map((r) => (
-              <RuleCard key={r.id} rule={r} />
-            ))}
-          </ul>
-        </section>
-      )}
+      {GROUP_ORDER.map((group) => {
+        const groupItems = items.filter((i) => i.group === group);
+        if (groupItems.length === 0) return null;
+        return (
+          <section key={group} className="mt-8">
+            <h2 className="text-lg font-medium text-gray-900">{GROUP_LABELS[group]}</h2>
+            <ul className="mt-3 space-y-3">
+              {groupItems.map((item) => {
+                const checked = !!done[keyFor(item.id)];
+                return (
+                  <li key={item.id} className="rounded-lg border border-orange-100 bg-white p-4">
+                    <div className="flex items-start gap-3">
+                      <input
+                        id={`item-${item.id}`}
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggle(item.id)}
+                        className="mt-1 h-5 w-5 accent-orange-700"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <label htmlFor={`item-${item.id}`} className={`font-medium ${checked ? "text-gray-500 line-through" : "text-gray-900"}`}>
+                            {item.title}
+                          </label>
+                          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[item.status]}`}>
+                            {STATUS_LABELS[item.status]}
+                          </span>
+                        </div>
+                        <details className="mt-2 text-sm text-gray-700">
+                          <summary className="cursor-pointer text-orange-800">What, why, and how</summary>
+                          <p className="mt-2"><span className="font-medium">What:</span> {item.what}</p>
+                          <p className="mt-1"><span className="font-medium">Why:</span> {item.why}</p>
+                          <p className="mt-1"><span className="font-medium">How:</span> {item.how}</p>
+                          <p className="mt-2">
+                            <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+                              {item.sourceLabel}
+                            </a>
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Checked {item.checkedOn} · <ReportLink id={item.id} />
+                          </p>
+                        </details>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
+
       </>)}
       <StatewideRules />
+      <p className="mt-8 text-sm text-gray-600">
+        Ticks are saved in this browser only. Next: use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> to
+        see which reviews apply, and the <Link href="/tracker" className="text-orange-800 underline">tracker</Link> to log dates.
+      </p>
     </main>
   );
 }

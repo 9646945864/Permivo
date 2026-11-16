@@ -1,85 +1,83 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import ToolHeader from "../components/ToolHeader";
-import { NotCovered, PlaceSelector, ReportLink, StatewideRules, isCovered, usePlace } from "../components/PlaceSelector";
-import { useEffect, useMemo, useState } from "react";
-import { PROJECT_LABELS, STATUS_LABELS, type Location, type ProjectType, type Status } from "../../data/rules";
-import { GROUP_LABELS, GROUP_ORDER, itemsFor } from "../../data/checklist";
-
-const STORAGE_KEY = "permivo-checklist-v1";
-const PROJECTS: ProjectType[] = ["deck", "addition", "garage"];
+import { COVERED_COUNTIES } from "../../data/ncCounties";
+import {
+  JURISDICTIONS,
+  type JurisdictionId,
+  PROJECT_LABELS,
+  RULES,
+  STATUS_LABELS,
+  type ProjectType,
+  type Status,
+} from "../../data/rules";
 
 const STATUS_STYLES: Record<Status, string> = {
   verified: "bg-green-100 text-green-900 border-green-300",
   partly: "bg-yellow-100 text-yellow-900 border-yellow-300",
   likely: "bg-blue-100 text-blue-900 border-blue-300",
-  unverified: "bg-orange-100 text-orange-900 border-orange-300",
+  unverified: "bg-red-100 text-red-900 border-red-300",
 };
 
-export default function ChecklistPage() {
-  const [project, setProject] = useState<ProjectType>("deck");
-  const [location, setLocation] = useState<Location>("city");
-  const [done, setDone] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
-  const [place, setPlace] = usePlace();
-  const covered = isCovered(place);
+const STATUS_ORDER: Status[] = ["verified", "partly", "likely", "unverified"];
+const PROJECTS = ["all", "deck", "addition", "garage", "trade"] as const;
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") setDone(parsed as Record<string, boolean>);
-      }
-    } catch {
-      // ignore unreadable storage
-    }
-    setLoaded(true);
-  }, []);
+export default function RulesPage() {
+  const [status, setStatus] = useState<Status | "all">("all");
+  const [project, setProject] = useState<(typeof PROJECTS)[number]>("all");
+  const [county, setCounty] = useState<string>("Mecklenburg");
+  const jurisdiction = JURISDICTIONS[county.toLowerCase() as JurisdictionId];
+  const countyRules = useMemo(() => RULES.filter((r) => r.jurisdiction === jurisdiction.id), [jurisdiction.id]);
 
-  useEffect(() => {
-    if (!loaded) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
-    } catch {
-      // storage may be unavailable
-    }
-  }, [done, loaded]);
+  const counts = useMemo(() => {
+    const c: Record<Status, number> = { verified: 0, partly: 0, likely: 0, unverified: 0 };
+    countyRules.forEach((r) => (c[r.status] += 1));
+    return c;
+  }, [countyRules]);
 
-  const items = useMemo(() => itemsFor(project, location), [project, location]);
-  const keyFor = (id: string) => `${project}:${location}:${id}`;
-  const doneCount = items.filter((i) => done[keyFor(i.id)]).length;
-  const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
-
-  function toggle(id: string) {
-    setDone((prev) => ({ ...prev, [keyFor(id)]: !prev[keyFor(id)] }));
-  }
-
-  function reset() {
-    const prefix = `${project}:${location}:`;
-    setDone((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith(prefix))));
-  }
+  const shown = countyRules.filter(
+    (r) =>
+      (status === "all" || r.status === status) &&
+      (project === "all" || r.projects.includes(project as ProjectType))
+  ).sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status));
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
-      <h1 className="tool-title text-3xl text-[#211b18]">Readiness checklist</h1>
+      <h1 className="tool-title text-3xl text-[#211b18]">Rules and sources</h1>
       <p className="mt-1 text-gray-600">
-        What to have ready before you submit. Each item explains what it is, why it matters, and how to do it.
+        Every rule Permivo uses for {jurisdiction.name}, with its source, status, and the date it was last checked.
       </p>
 
-      <div role="note" className="mt-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
-        Draft checklist. Items marked verified come from an official county or city page. Items marked not confirmed are
-        typical plan contents. The county’s own Project Submittal Requirements decide what you must submit. A finished
-        checklist does not guarantee the county will accept your plans. Not legal advice.
+      <div className="mt-4 rounded-lg border border-orange-100 bg-white p-4 text-sm text-gray-700">
+        <p>
+          <span className="font-medium">{counts.verified}</span> of {countyRules.length} rules are verified. A rule is
+          marked verified only when an official county or city page, or a written reply from the agency, supports it.
+          Third-party guides are treated as leads, not sources.
+        </p>
       </div>
 
-      <PlaceSelector place={place} onChange={setPlace} />
-      {!covered && <NotCovered place={place} />}
-      {covered && (<>
-      <section className="mt-6" aria-labelledby="project-heading">
-        <h2 id="project-heading" className="text-sm font-medium text-gray-700">Project type</h2>
+      <section className="mt-6" aria-labelledby="filters-heading">
+        <h2 id="filters-heading" className="sr-only">Filters</h2>
+        <div className="flex flex-wrap gap-2">
+          {(["all", ...STATUS_ORDER] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              aria-pressed={status === s}
+              onClick={() => setStatus(s)}
+              className={`rounded-md border px-3 py-1.5 text-sm ${
+                status === s
+                  ? "border-orange-800 bg-orange-800 text-white"
+                  : "border-orange-200 bg-white text-gray-800 hover:border-orange-400"
+              }`}
+            >
+              {s === "all" ? "All statuses" : `${STATUS_LABELS[s]} (${counts[s]})`}
+            </button>
+          ))}
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {PROJECTS.map((p) => (
             <button
@@ -87,107 +85,50 @@ export default function ChecklistPage() {
               type="button"
               aria-pressed={project === p}
               onClick={() => setProject(p)}
-              className={`rounded-md border px-3 py-2 text-sm ${
-                project === p ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"
+              className={`rounded-md border px-3 py-1.5 text-sm ${
+                project === p
+                  ? "border-orange-800 bg-orange-800 text-white"
+                  : "border-orange-200 bg-white text-gray-800 hover:border-orange-400"
               }`}
             >
-              {PROJECT_LABELS[p]}
+              {p === "all" ? "All projects" : PROJECT_LABELS[p as ProjectType]}
             </button>
           ))}
         </div>
       </section>
 
-      <section className="mt-5" aria-labelledby="location-heading">
-        <h2 id="location-heading" className="text-sm font-medium text-gray-700">Where is the property?</h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {(["city", "outside"] as Location[]).map((l) => (
-            <button
-              key={l}
-              type="button"
-              aria-pressed={location === l}
-              onClick={() => setLocation(l)}
-              className={`rounded-md border px-3 py-2 text-sm ${
-                location === l ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"
-              }`}
-            >
-              {l === "city" ? "Inside Charlotte city limits" : "Elsewhere in the county"}
-            </button>
-          ))}
-        </div>
-      </section>
+      <ul className="mt-6 space-y-3">
+        {shown.map((r) => (
+          <li key={r.id} className="rounded-lg border border-orange-100 bg-white p-4">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="font-medium text-gray-900">{r.title}</h2>
+              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[r.status]}`}>
+                {STATUS_LABELS[r.status]}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {r.id} · {r.projects.map((p) => PROJECT_LABELS[p]).join(", ")} ·{" "}
+              {r.where === "city" ? jurisdiction.locationLabels?.city ?? "Inside a city or town" : r.where === "outside" ? jurisdiction.locationLabels?.outside ?? "Outside a city or town" : "Whole county"}
+            </p>
+            <p className="mt-2 text-sm text-gray-700">
+              <span className="font-medium">Stated time:</span> {r.statedTime}
+            </p>
+            <p className="mt-1 text-sm text-gray-600">{r.note}</p>
+            <p className="mt-2 text-sm">
+              <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+                {r.sourceLabel}
+              </a>
+              <span className="text-gray-500"> · checked {r.checkedOn}</span>
+            </p>
+          </li>
+        ))}
+        {shown.length === 0 && <li className="text-sm text-gray-600">No rules match these filters.</li>}
+      </ul>
 
-      <section className="mt-6 rounded-lg border border-orange-100 bg-white p-4" aria-live="polite">
-        <div className="flex items-baseline justify-between">
-          <p className="text-sm font-medium text-gray-900">
-            {doneCount} of {items.length} ready
-          </p>
-          <p className="text-sm text-gray-600">{pct}%</p>
-        </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded bg-orange-100" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full bg-orange-700" style={{ width: `${pct}%` }} />
-        </div>
-        <button type="button" onClick={reset} className="mt-3 rounded border border-gray-300 px-3 py-1 text-sm text-gray-700">
-          Clear ticks for this project
-        </button>
-      </section>
-
-      {GROUP_ORDER.map((group) => {
-        const groupItems = items.filter((i) => i.group === group);
-        if (groupItems.length === 0) return null;
-        return (
-          <section key={group} className="mt-8">
-            <h2 className="text-lg font-medium text-gray-900">{GROUP_LABELS[group]}</h2>
-            <ul className="mt-3 space-y-3">
-              {groupItems.map((item) => {
-                const checked = !!done[keyFor(item.id)];
-                return (
-                  <li key={item.id} className="rounded-lg border border-orange-100 bg-white p-4">
-                    <div className="flex items-start gap-3">
-                      <input
-                        id={`item-${item.id}`}
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggle(item.id)}
-                        className="mt-1 h-5 w-5 accent-orange-700"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <label htmlFor={`item-${item.id}`} className={`font-medium ${checked ? "text-gray-500 line-through" : "text-gray-900"}`}>
-                            {item.title}
-                          </label>
-                          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[item.status]}`}>
-                            {STATUS_LABELS[item.status]}
-                          </span>
-                        </div>
-                        <details className="mt-2 text-sm text-gray-700">
-                          <summary className="cursor-pointer text-orange-800">What, why, and how</summary>
-                          <p className="mt-2"><span className="font-medium">What:</span> {item.what}</p>
-                          <p className="mt-1"><span className="font-medium">Why:</span> {item.why}</p>
-                          <p className="mt-1"><span className="font-medium">How:</span> {item.how}</p>
-                          <p className="mt-2">
-                            <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
-                              {item.sourceLabel}
-                            </a>
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            Checked {item.checkedOn} · <ReportLink id={item.id} />
-                          </p>
-                        </details>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        );
-      })}
-
-      </>)}
-      <StatewideRules />
       <p className="mt-8 text-sm text-gray-600">
-        Ticks are saved in this browser only. Next: use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> to
-        see which reviews apply, and the <Link href="/tracker" className="text-orange-800 underline">tracker</Link> to log dates.
+        Found something wrong or out of date? Use the feedback link on the home page. See also the{" "}
+        <Link href="/disclaimer" className="text-orange-800 underline">disclaimer</Link> and{" "}
+        <Link href="/about" className="text-orange-800 underline">about page</Link>.
       </p>
     </main>
   );

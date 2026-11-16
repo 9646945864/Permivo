@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import ToolHeader from "../components/ToolHeader";
-import { NotCovered, PlaceSelector, ReportLink, isCovered, usePlace } from "../components/PlaceSelector";
+import { NotCovered, PlaceSelector, ReportLink, StatewideRules, isCovered, usePlace } from "../components/PlaceSelector";
 import { useEffect, useMemo, useState } from "react";
 import { PROJECT_LABELS, STATUS_LABELS, type Location, type ProjectType, type Status } from "../../data/rules";
 import { GROUP_LABELS, GROUP_ORDER, itemsFor } from "../../data/checklist";
@@ -184,6 +184,7 @@ export default function ChecklistPage() {
       })}
 
       </>)}
+      <StatewideRules />
       <p className="mt-8 text-sm text-gray-600">
         Ticks are saved in this browser only. Next: use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> to
         see which reviews apply, and the <Link href="/tracker" className="text-orange-800 underline">tracker</Link> to log dates.

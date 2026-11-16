@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ToolHeader from "../components/ToolHeader";
-import { NotCovered, PlaceSelector, ReportLink, isCovered, usePlace } from "../components/PlaceSelector";
+import { NotCovered, PlaceSelector, ReportLink, StatewideRules, isCovered, usePlace } from "../components/PlaceSelector";
 import {
   PROJECT_LABELS,
   STATUS_LABELS,
@@ -163,6 +163,7 @@ export default function PlannerPage() {
         </section>
       )}
       </>)}
+      <StatewideRules />
     </main>
   );
 }

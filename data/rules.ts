@@ -3,7 +3,7 @@
 // Only mark a rule "verified" when an official county or city page, or a written
 // agency reply, supports it. Third-party guides are leads, not sources.
 // Keep real addresses and personal data out of this public repository.
-// Last updated: November 16, 2026, after the second written reply from Mecklenburg County CIRC and the Cabarrus County research.
+// Last updated: November 17, 2026, after the written replies from Mecklenburg County and Cabarrus County.
 
 export type ProjectType = "deck" | "addition" | "garage" | "trade";
 export type Location = "city" | "outside";
@@ -81,14 +81,14 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     locationLabels: { city: "Inside a town (Concord, Kannapolis, others)", outside: "Unincorporated Cabarrus County" },
     defaultLocation: "outside",
     confirmWith: "Cabarrus County Construction Standards (704-920-2128), the county Zoning office (704-920-2141), or your town's planning office",
-    partialNote: "Cabarrus County is partly verified. Its zoning steps and fees come from county pages. Whether a stand-alone deck, addition or garage needs plan review, the order of the zoning and building steps, and building permit fees are still waiting on the county's written answer.",
+    partialNote: "Cabarrus County is partly verified. The county confirmed in writing that a deck, addition and detached garage need a standard building permit with no plan review, and that zoning comes first. Building permit fee rates, the drawings the county wants, whether an engineer's letter is needed, the size line for small accessory buildings and the lien amount are still open. Inside a town, the town sets zoning.",
     note: "Zoning is a separate county office (704-920-2141) and covers unincorporated Cabarrus County only. Properties inside Concord, Kannapolis and other towns follow the town's own rules.",
     facts: [
       { text: "The county says a zoning permit is needed for additions, accessory structures such as a garage or storage building, and for installing or adding on to a deck or patio.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
       { text: "Permits are tracked in the county's Accela portal. The county's permit form lists decks under both Addition and Accessory Structure permit types.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
       { text: "A lien filing is required for projects of $30,000 or more.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
       { text: "Residential building permits for accessory structures (such as a detached garage) and additions (such as a deck, room or screened porch) are applied for online in Accela.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-15" },
-      { text: "The county's plan review page says plan review is for all new primary residences and all new and renovation commercial projects. Decks, additions and garages are not named. Residential reviews take 5-7 business days depending on zoning.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
+      { text: "The county's plan review page says plan review is for all new primary residences and all new and renovation commercial projects. Decks, additions and garages are not named. Residential reviews take 5-7 business days depending on zoning. The county later confirmed in writing that a deck, addition and detached garage do not go through plan review.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
       { text: "Plan review files must be PDFs, with building and site reviews submitted separately and different document types not combined in one PDF.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review", checkedOn: "2026-11-15" },
       { text: "Development Ordinance (copy with amendments through January 2022, so confirm it is current), Section 6-14: an uncovered, unenclosed deck, terrace or patio may extend into a required setback, but never closer than 5 feet to any property line.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
       { text: "Development Ordinance Section 7-3 (copy with amendments through January 2022): an accessory building up to 15 feet tall must meet the house's front and side setbacks, with a rear setback of at least 5 feet. Taller buildings must meet the house's setbacks. Impervious and structural coverage limits also apply.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Planning-and-Development/Zoning/Zoning-Permitting", checkedOn: "2026-11-15" },
@@ -97,7 +97,10 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "The county's zoning FAQ says a plot plan of the property with the proposed improvements must be submitted for zoning permitting. Setbacks, impervious area, water buffers, watershed and floodplain standards are reviewed from it. Setbacks are measured from the road right-of-way, not the edge of pavement.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
       { text: "The county's zoning FAQ says a zoning permit is required for a shed, carport, garage or gazebo, and that building permits may also be needed depending on the size of the structure. Cabarrus Health Alliance approval is required before a zoning permit for projects such as additions and accessory buildings on lots with septic.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
       { text: "The county's Development Ordinance applies only to unincorporated Cabarrus County. For a property in a municipality or its extra-territorial jurisdiction (for example Concord or Kannapolis), the town's own development rules apply.", sourceUrl: "https://cabarruscounty.us/Government/Departments/Planning/Zoning-Division/ZoningEnforcement-FAQ", checkedOn: "2026-11-15" },
-      { text: "Stated residential plan review time conflicts between county documents: 5-7 business days on the Plan Review page, 2-5 business days in the Plan Review Instructions PDF. Other departments' reviews can affect total time.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/planning-and-development/construction-standards/documents/plan-review-instructions.pdf", checkedOn: "2026-11-15" },
+      { text: "Stated residential plan review time conflicts between county documents: 5-7 business days on the Plan Review page, 2-5 business days in the Plan Review Instructions PDF. Other departments' reviews can affect total time. This applies to projects that go through plan review, which the county says does not include a deck, addition or garage.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/planning-and-development/construction-standards/documents/plan-review-instructions.pdf", checkedOn: "2026-11-15" },
+      { text: "Written reply from Cabarrus County, Nov 2026: a stand-alone deck needs a building permit and inspections. A deck, a residential addition and a detached garage are standard building permits in Accela and do not need plan review.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-17" },
+      { text: "Written reply from Cabarrus County, Nov 2026: zoning approval comes first and the building permit second.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-17" },
+      { text: "Written reply from Cabarrus County, Nov 2026: building permit fees for a deck, addition and detached garage depend on square footage (no rate given). Residential permits can take anywhere from 2 to 5 weeks (commercial 8 to 12), depending on the project and on how each department and zoning jurisdiction reviews it.", sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access", checkedOn: "2026-11-17" },
       { text: "Inspections: text SCHEDULE to 888-365-1710, email inspections@cabarruscounty.us, or leave a voicemail at 704-920-2128.", sourceUrl: "https://www.cabarruscounty.us/files/assets/public/v/1/construction-standards/documents/homeowners-permit-guide.pdf", checkedOn: "2026-11-15" },
     ],
   },
@@ -487,11 +490,11 @@ export const RULES: Rule[] = [
     projects: ["deck"],
     where: "county",
     title: "County building permit, applied for in Accela",
-    statedTime: "Not stated for decks",
-    sourceLabel: "Cabarrus County, Construction Standards online access; homeowner permit guide",
+    statedTime: "County says residential can take anywhere from 2 to 5 weeks, depending on what the project is and how each department and zoning jurisdiction reviews it",
+    sourceLabel: "Cabarrus County written reply, Nov 2026; Construction Standards online access",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "partly",
-    note: "The county applies for additions, which it describes as including a deck, room or screened porch, through Accela. Whether a stand-alone deck has any exemption, and whether it goes through plan review, is not confirmed.",
+    status: "verified",
+    note: "The county confirmed in writing that a stand-alone deck needs a building permit and inspections. It is applied for in Accela as a standard building permit.",
   },
 
   {
@@ -502,11 +505,11 @@ export const RULES: Rule[] = [
     projects: ["addition"],
     where: "county",
     title: "County building permit, applied for in Accela",
-    statedTime: "Not stated for additions",
-    sourceLabel: "Cabarrus County, Construction Standards online access",
+    statedTime: "County says residential can take anywhere from 2 to 5 weeks, depending on what the project is and how each department and zoning jurisdiction reviews it",
+    sourceLabel: "Cabarrus County written reply, Nov 2026; Construction Standards online access",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "partly",
-    note: "Residential additions are applied for through Accela. Whether an addition goes through plan review is not confirmed.",
+    status: "verified",
+    note: "The county confirmed in writing that a residential addition is a standard building permit in Accela and does not go through plan review.",
   },
 
   {
@@ -517,11 +520,11 @@ export const RULES: Rule[] = [
     projects: ["garage"],
     where: "county",
     title: "County building permit, applied for in Accela",
-    statedTime: "Not stated for garages",
-    sourceLabel: "Cabarrus County, Construction Standards online access; Zoning FAQ",
+    statedTime: "County says residential can take anywhere from 2 to 5 weeks, depending on what the project is and how each department and zoning jurisdiction reviews it",
+    sourceLabel: "Cabarrus County written reply, Nov 2026; Construction Standards online access; Zoning FAQ",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "partly",
-    note: "Accessory structures such as a detached garage are applied for through Accela. The zoning FAQ says a building permit may also be needed depending on the size of the structure, but the size line is not stated.",
+    status: "verified",
+    note: "The county confirmed in writing that a detached garage is a standard building permit in Accela and does not go through plan review. The zoning FAQ says a building permit may depend on the size of a structure, and the county did not give a size line for small accessory buildings.",
   },
 
   {
@@ -531,12 +534,12 @@ export const RULES: Rule[] = [
     kind: "step",
     projects: ["deck","addition","garage"],
     where: "county",
-    title: "County plan review is listed only for new primary residences and commercial projects",
-    statedTime: "5-7 business days for residential reviews, depending on zoning (Plan Review page); 2-5 business days in the Plan Review Instructions PDF",
-    sourceLabel: "Cabarrus County, Plan Review page and Plan Review Instructions",
+    title: "No county plan review for a deck, addition or detached garage",
+    statedTime: "County says residential can take anywhere from 2 to 5 weeks, depending on what the project is and how each department and zoning jurisdiction reviews it",
+    sourceLabel: "Cabarrus County written reply, Nov 2026; Plan Review page",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Plan-Review",
-    status: "partly",
-    note: "The county's Plan Review page says plan review is for all new primary residences and all new and renovation commercial projects. Decks, additions and detached garages are not on that list, which suggests they are a standard building permit, but the county has not said so in writing. The page says the residential review time depends on zoning, and the Instructions PDF gives a different range. When the plan review path applies, submit through Accela's Digital Plan Room: PDFs only (100 MB maximum, no encrypted files), building and site reviews submitted separately, and no new uploads in the middle of a review cycle.",
+    status: "verified",
+    note: "The county confirmed in writing that plan review is not needed for a deck, a residential addition or a detached garage. Plan review applies to new primary residences and commercial projects. The residential time conflict (5-7 versus 2-5 business days) applies only to that path. If your project does go through the Digital Plan Room: PDFs only (100 MB maximum, no encrypted files), building and site reviews submitted separately, and no new uploads in the middle of a review cycle.",
   },
 
   {
@@ -606,12 +609,12 @@ export const RULES: Rule[] = [
     kind: "question",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Open question: does a stand-alone deck, addition or garage need plan review?",
-    statedTime: "Not confirmed",
-    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    title: "Plan review for a deck, addition or garage: not needed",
+    statedTime: "County says residential can take anywhere from 2 to 5 weeks, depending on what the project is and how each department and zoning jurisdiction reviews it",
+    sourceLabel: "Cabarrus County written reply, Nov 2026",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "unverified",
-    note: "The county's Plan Review page lists only new primary residences and commercial projects, so a deck, addition or garage is likely a standard building permit. Asked of Construction Standards for a written answer. Until the county confirms, treat this as not confirmed.",
+    status: "verified",
+    note: "Answered by the county in writing: plan review is not needed for a deck, addition or detached garage.",
   },
 
   {
@@ -621,12 +624,12 @@ export const RULES: Rule[] = [
     kind: "question",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Open question: which comes first, the zoning permit or the building permit?",
-    statedTime: "Not confirmed",
-    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    title: "Order of steps: zoning permit first, building permit second",
+    statedTime: "Not a review step",
+    sourceLabel: "Cabarrus County written reply, Nov 2026",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "unverified",
-    note: "No county page states the order. The septic and well approval is stated to come before the zoning permit.",
+    status: "verified",
+    note: "Answered by the county in writing: zoning approval first, building permit second. Where septic or a well applies, the Health Alliance approval comes before the zoning permit. For a property inside a town, the town handles zoning, so confirm with the town.",
   },
 
   {
@@ -636,12 +639,12 @@ export const RULES: Rule[] = [
     kind: "question",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Open question: building permit fees",
-    statedTime: "Not confirmed",
-    sourceLabel: "Email to Cabarrus County, Nov 2026 (reply pending)",
+    title: "Building permit fees depend on square footage",
+    statedTime: "Not applicable",
+    sourceLabel: "Cabarrus County written reply, Nov 2026",
     sourceUrl: "https://www.cabarruscounty.us/Government/Departments/Construction-Standards/Online-Access",
-    status: "unverified",
-    note: "The county's zoning fees are published. The building permit fee schedule was not found on the pages read.",
+    status: "partly",
+    note: "The county said building permit fees for a deck, addition and detached garage depend on square footage. No rate was given. The county's zoning fees are published separately.",
   },
 ];
 

@@ -5,14 +5,15 @@ import { usePathname } from "next/navigation";
 
 const TOOLS = [
   { href: "/planner", label: "Planner" },
-  { href: "/tracker", label: "Tracker" },
   { href: "/checklist", label: "Checklist" },
+  { href: "/ask", label: "Ask" },
+  { href: "/tracker", label: "Tracker" },
 ];
 
 export default function ToolHeader() {
   const pathname = usePathname();
   return (
-    <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-orange-200 pb-4">
+    <header className="no-print mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-orange-200 pb-4">
       <Link href="/" className="flex items-center gap-2" aria-label="Permivo home">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo/permivo-logo-a.svg" alt="" width={30} height={30} />

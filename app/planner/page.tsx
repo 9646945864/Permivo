@@ -78,7 +78,7 @@ export default function PlannerPage() {
       <ToolHeader />
       <h1 className="tool-title text-3xl text-[#211b18]">Permivo route planner</h1>
       <p className="mt-1 text-gray-600">
-        See which reviews may apply to a small residential project. Rules are available for Mecklenburg and Cabarrus counties.
+        See which reviews may apply to a small residential project. Rules are available for Mecklenburg, Cabarrus and Catawba counties.
       </p>
 
       <div

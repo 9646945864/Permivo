@@ -791,7 +791,7 @@ export const CHECKLIST: ChecklistItem[] = [
     title: "Submit everything at one time",
     what: "The zoning approval, health approval, forms and building permit application together.",
     why: "The county advises this to avoid delays, and issues the permit only after all items are received.",
-    how: "Check every item above before you submit.",
+    how: "Check every item above before you submit. The county's order is: zoning approval, water and sewer or septic and well approval, prerequisite forms, submit the packet to the Permit Center, review and payment, then permits are issued. During peak months, allow extra time.",
     sourceLabel: "Catawba County Permit Center, permit information",
     sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-unlicensed-general-contractors/",
     status: "verified",

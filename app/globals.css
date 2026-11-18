@@ -338,3 +338,7 @@ footer > span:last-child { display: flex; gap: 16px; }
 /* ============ 14. Ask Permivo ============ */
 .bg-red-50 { background-color: #fef2f2; }
 .whitespace-pre-line { white-space: pre-line; }
+.route-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .route-grid.two { grid-template-columns: 1fr 1fr; } }
+.route-grid > div { min-width: 0; }
+.route-wide { max-width: 56rem; }

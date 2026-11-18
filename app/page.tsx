@@ -96,8 +96,9 @@ export default function Home() {
           <a href="#tools">Tools</a>
           <a href="#status">Status</a>
           <Link href="/planner" className="nav-tool-link">Planner</Link>
-          <Link href="/tracker" className="nav-tool-link">Tracker</Link>
           <Link href="/checklist" className="nav-tool-link">Checklist</Link>
+          <Link href="/ask" className="nav-tool-link">Ask</Link>
+          <Link href="/tracker" className="nav-tool-link">Tracker</Link>
           <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode}>
             <span className="theme-icon">{darkMode ? "☼" : "☾"}</span>
             <span className="theme-label">{darkMode ? "Light" : "Dark"}</span>
@@ -176,7 +177,7 @@ export default function Home() {
 
       <section id="tools" className="tools-section">
         <div className="section-heading">
-          <div><p className="eyebrow">05 · THE TOOLS</p><h2>Three tools, <em>one route.</em></h2></div>
+          <div><p className="eyebrow">05 · THE TOOLS</p><h2>Four tools, <em>one route.</em></h2></div>
           <p>Everything you need to move from “what if?” to “what’s next?”</p>
         </div>
         <div className="tool-grid">
@@ -197,6 +198,12 @@ export default function Home() {
             <h3>Readiness checklist <span>↗</span></h3>
             <p>See what each requirement is, why it exists, and how to complete it. Tick items off as you go.</p>
             <div className="card-arrow">Open checklist →</div>
+          </Link>
+          <Link href="/ask" className="tool-card">
+            <span className="tool-number">04 / NEW</span>
+            <h3>Ask Permivo <span>↗</span></h3>
+            <p>Ask a permit question in plain words. Answers come only from checked rules, with the source and how sure we are.</p>
+            <div className="card-arrow">Ask a question →</div>
           </Link>
         </div>
       </section>
@@ -255,7 +262,7 @@ export default function Home() {
       <footer>
         <Link href="/" className="brand"><Mark /><span>permivo</span></Link>
         <span>Early prototype · Not legal advice</span>
-        <span><Link href="/planner">Planner</Link><Link href="/tracker">Tracker</Link><Link href="/checklist">Checklist</Link><Link href="/rules">Rules</Link><Link href="/about">About</Link><Link href="/disclaimer">Disclaimer</Link></span>
+        <span><Link href="/planner">Planner</Link><Link href="/tracker">Tracker</Link><Link href="/checklist">Checklist</Link><Link href="/ask">Ask</Link><Link href="/rules">Rules</Link><Link href="/about">About</Link><Link href="/disclaimer">Disclaimer</Link></span>
       </footer>
     </main>
   );

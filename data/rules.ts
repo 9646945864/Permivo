@@ -22,6 +22,10 @@ export interface Jurisdiction {
   defaultLocation?: Location;
   // Who the user should confirm with. Shown in the planner banner.
   confirmWith?: string;
+  // Names of the two agencies in the planner: the city or town side and the county side.
+  agencyLabels?: { city: string; county: string };
+  // What the agency says about total time. min and max are in days and are optional (some counties give none).
+  statedDays?: { label: string; min?: number; max?: number };
   // Shown for coverage "partial": what is still waiting on the agency.
   partialNote?: string;
   officeLabel: string;
@@ -46,6 +50,8 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     locationLabels: { city: "Inside Charlotte city limits", outside: "Elsewhere in the county" },
     defaultLocation: "city",
     confirmWith: "Mecklenburg County Code Enforcement and the City of Charlotte",
+    agencyLabels: { city: "City of Charlotte", county: "Mecklenburg County" },
+    statedDays: { label: "About 3 weeks for the county process (county written reply, Nov 2026). The city stated 3 business days for its gateway check and 7 for review.", min: 21, max: 21 },
   },
   catawba: {
     id: "catawba",
@@ -58,8 +64,10 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officeAddress: "25 Government Drive, Newton, NC 28658",
     locationLabels: { city: "Inside a city or town (Hickory, Conover, Newton, others)", outside: "Unincorporated Catawba County" },
     defaultLocation: "outside",
+    agencyLabels: { city: "Your town's planning office", county: "Catawba County" },
+    statedDays: { label: "Not stated for a standard building permit. When plan review applies it takes a few hours to 10 days (county written reply, Nov 2026)." },
     confirmWith: "Catawba County Permit Center (828-465-8399), County Zoning (828-465-8380), or your city or town planning office",
-    partialNote: "Catawba County is partly verified. Its zoning steps, forms, building permit fees and inspection scheduling come from county pages and the FY27 fee schedule. Whether a deck, addition or garage needs plan review, how long a permit takes, permit expiration and size exemptions are still waiting on the county's written answer.",
+    partialNote: "Catawba County is mostly verified from the county's written reply and official pages. Still open: whether a stand-alone deck needs a zoning permit or a waiver letter, how long a standard building permit takes to issue, and which drawings a standard permit needs. Inside a town, the town's planning office issues the zoning permit.",
     note: "Cities and towns in the county (Hickory, Conover, Newton and others) have their own planning offices for zoning.",
     facts: [
       { text: "The county says most building projects need zoning approval, and a building permit needs an approved zoning permit or a waiver letter from the zoning department.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-15" },
@@ -74,12 +82,18 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "FY27 fee schedule (effective July 1, 2026): stand-alone deck and residential accessory building $0.25 per sq ft; new residential construction $0.50 per sq ft; minimum building permit $90; residential zoning permit for additions and accessory structures $25; re-trip fee $120; work started without a permit is charged double.", sourceUrl: "https://catawbacountync.gov/site/assets/files/11750/fy27_fee_schedule.pdf", checkedOn: "2026-11-18" },
       { text: "FY27 fee schedule: existing structure alterations are $90 up to $5,000, then $90 plus $3 per additional thousand to $100,000. Plan review minimum $90; alterations plan review $0.04 per sq ft; resubmittals are free the first time, half the fee the second time and the full fee the third and fourth times.", sourceUrl: "https://catawbacountync.gov/site/assets/files/11750/fy27_fee_schedule.pdf", checkedOn: "2026-11-18" },
       { text: "Inspections are scheduled for the following workday, or the next available day if full. Request them in ePermits or by phone at 828-465-8399. Building and trade contractors who have worked with the office in the past five years need an access code from the Permit Center.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/", checkedOn: "2026-11-18" },
-      { text: "The county's contractor page says a general contractor's license is required when total project cost exceeds $30,000. North Carolina law (G.S. 87-1) uses $40,000, so confirm with the county.", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-unlicensed-general-contractors/", checkedOn: "2026-11-18" },
+      { text: "The county's contractor page still says a general contractor's license is required above $30,000, but the county confirmed in writing in Nov 2026 that its threshold is $40,000, which matches state law (G.S. 87-1).", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-unlicensed-general-contractors/", checkedOn: "2026-11-18" },
       { text: "An owner acting as general contractor must have the property in their own name, and it cannot be rented, leased or sold for one year after the project is completed.", sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-owner-acting-as-the-general-contractor/", checkedOn: "2026-11-18" },
       { text: "County permit process order, per the county's process chart and page: obtain zoning approval, then water and sewer or well and septic approvals, then complete prerequisite forms, then submit the application packet to the Permit Center, then application review and payment, then permits are issued. The county says each project is unique and may have additional steps.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
       { text: "The county's Building Services Division does inspections in the unincorporated areas and for the eight municipalities: Brookford, Catawba, Claremont, Conover, Hickory, Long View, Newton and Maiden.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/", checkedOn: "2026-11-18" },
       { text: "During peak months the county asks applicants to allow additional time for permit processing. Payments by check, debit card and credit card (Visa and MasterCard only) are accepted. The Permit Center takes in-person applications and payments Monday to Friday, 8:00 a.m. to 5:00 p.m.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
       { text: "FY27 fee schedule also lists: administrative fee $30, change of contractor $30, after-hours inspections $105 per hour, and a $10 Homeowners Recovery Fund fee for single family units. A workers' compensation affidavit form is linked on the county page.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: plan review for residential property is only required for metal framed or metal truss structures, post and beam construction, or a change from residential to commercial use. It needs sealed engineered drawings and takes anywhere from a few hours to 10 days.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: additions onto homes are $0.50 per sq ft, and alterations inside an existing structure are also charged by the cost of the work.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: residential building permits are valid for 6 months without inspections. After any passed or failed inspection, the expiration is extended to one year from the most recent inspection.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: decks always need a building permit. Accessory structures need no building permit if they are 12 by 12 feet or smaller, but still need a zoning permit and Environmental Health approval if a septic system or well is on the property. If any side exceeds 12 feet, a building permit is required.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: building permits are always issued by the county, and municipalities issue zoning permits for residential properties.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
+      { text: "Written reply from Catawba County, Nov 2026: the county's cost threshold for a general contractor's license is $40,000.", sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/", checkedOn: "2026-11-18" },
     ],
   },
   cabarrus: {
@@ -93,6 +107,8 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officeAddress: "65 Church St S, Concord, NC 28025",
     locationLabels: { city: "Inside a town (Concord, Kannapolis, others)", outside: "Unincorporated Cabarrus County" },
     defaultLocation: "outside",
+    agencyLabels: { city: "Your town's planning office", county: "Cabarrus County" },
+    statedDays: { label: "Residential can take 2 to 5 weeks, depending on the project and how each department and zoning jurisdiction reviews it (county written reply, Nov 2026).", min: 14, max: 35 },
     confirmWith: "Cabarrus County Construction Standards (704-920-2128), the county Zoning office (704-920-2141), or your town's planning office",
     partialNote: "Cabarrus County is partly verified. The county confirmed in writing that a deck, addition and detached garage need a standard building permit with no plan review, and that zoning comes first. Building permit fee rates, the drawings the county wants, whether an engineer's letter is needed, the size line for small accessory buildings and the lien amount are still open. Inside a town, the town sets zoning.",
     note: "Zoning is a separate county office (704-920-2141) and covers unincorporated Cabarrus County only. Properties inside Concord, Kannapolis and other towns follow the town's own rules.",
@@ -857,10 +873,10 @@ export const RULES: Rule[] = [
     where: "county",
     title: "County building permit, applied for in ePermits",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County Permit Services; Fee schedule FY27",
+    sourceLabel: "Catawba County written reply, Nov 2026; Fee schedule FY27",
     sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/",
     status: "verified",
-    note: "The county's FY27 fee schedule has a building permit fee for a stand-alone residential deck, which shows a deck gets a building permit. Applications, payments and inspection requests are done in the county's ePermits portal.",
+    note: "The county confirmed in writing that a deck always needs a building permit, because it attaches to an existing structure and adds footprint. It is applied for in ePermits. The FY27 fee is $0.25 per sq ft with a $90 minimum.",
   },
 
   {
@@ -872,10 +888,10 @@ export const RULES: Rule[] = [
     where: "county",
     title: "County building permit, applied for in ePermits",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County residential handout; Fee schedule FY27",
+    sourceLabel: "Catawba County written reply, Nov 2026",
     sourceUrl: "https://www.catawbacountync.gov/site/assets/files/5316/procedu_for_res_dwell.pdf",
-    status: "partly",
-    note: "The county's residential handout (undated) lists a building permit application for additions. The FY27 fee schedule does not name an addition rate, so the fee is not confirmed. The handout asks for one set of plans showing a scaled layout of each story with rooms labeled by use.",
+    status: "verified",
+    note: "Additions onto a home are charged $0.50 per sq ft. If alterations are also done inside the existing structure, the county also charges for the cost of that work. A standard building permit is applied for in ePermits.",
   },
 
   {
@@ -887,10 +903,10 @@ export const RULES: Rule[] = [
     where: "county",
     title: "County building permit, applied for in ePermits",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County, accessory building requirements; Fee schedule FY27",
+    sourceLabel: "Catawba County written reply, Nov 2026; Fee schedule FY27",
     sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-unlicensed-general-contractors/",
     status: "verified",
-    note: "A detached accessory building needs a building permit application plus the zoning, water and septic, and erosion control items. The FY27 fee schedule has a residential accessory rate.",
+    note: "A detached accessory building needs a building permit if it is larger than 12 by 12 feet on any side. At 12 by 12 or smaller no building permit is needed, but a zoning permit and Environmental Health approval (if there is a septic system or well) still are. The FY27 fee is $0.25 per sq ft with a $90 minimum.",
   },
 
   {
@@ -900,12 +916,12 @@ export const RULES: Rule[] = [
     kind: "step",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Plan review",
-    statedTime: "Not stated",
-    sourceLabel: "Catawba County Plan Review page",
+    title: "Plan review is not needed for most decks, additions and garages",
+    statedTime: "A few hours to 10 days, when plan review applies",
+    sourceLabel: "Catawba County written reply, Nov 2026",
     sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/plan-review/",
-    status: "partly",
-    note: "The county's plan review page covers commercial projects, full plan review for townhouses and counter review for duplexes. Decks, additions and garages are not mentioned. All plans are reviewed electronically in ePermits. The county has not said in writing whether a deck, addition or garage goes through plan review.",
+    status: "verified",
+    note: "The county confirmed in writing that plan review for residential property is only required when the structure is metal framed or uses metal trusses, is post and beam construction, or is changing from residential to commercial use. Sealed engineered drawings are required for plan review. Otherwise a deck, addition or garage is a standard building permit applied for in ePermits.",
   },
 
   {
@@ -930,12 +946,12 @@ export const RULES: Rule[] = [
     kind: "step",
     projects: ["addition"],
     where: "county",
-    title: "Building permit fees for an addition",
+    title: "Building permit fee for an addition: $0.50 per sq ft",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County FY27 Fee Schedule (effective July 1, 2026)",
+    sourceLabel: "Catawba County written reply, Nov 2026",
     sourceUrl: "https://catawbacountync.gov/site/assets/files/11750/fy27_fee_schedule.pdf",
-    status: "partly",
-    note: "The schedule has $0.50 per sq ft for new residential construction and tiered alteration fees ($90 up to $5,000, then $3 per additional thousand), but no line for additions. Which one applies to an addition is not confirmed. Minimum building fee $90. Zoning $25.",
+    status: "verified",
+    note: "The county confirmed in writing that additions onto homes are $0.50 per sq ft. Alterations inside the existing structure are also charged by the cost of the work (the schedule's alteration table starts at $90). Minimum building fee $90. Zoning $25.",
   },
 
   {
@@ -947,10 +963,10 @@ export const RULES: Rule[] = [
     where: "county",
     title: "Owner or contractor forms",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County, requirements for licensed, unlicensed and owner builders",
+    sourceLabel: "Catawba County written reply, Nov 2026; county forms pages",
     sourceUrl: "https://www.catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/permit-information/for-owner-acting-as-the-general-contractor/",
     status: "partly",
-    note: "A licensed contractor must be listed on the application. An owner acting as contractor must own the property in their own name, cannot rent, lease or sell it for one year after the project, and files the owner form. The county page says a general contractor's license is needed when the project cost exceeds $30,000, while North Carolina law (G.S. 87-1) uses $40,000, so confirm the amount with the county. A lien agent designation is listed on the county page only for manufactured, modular and single family dwellings, not for accessory buildings or alterations.",
+    note: "A licensed contractor must be listed on the application. An owner acting as contractor must own the property in their own name, cannot rent, lease or sell it for one year after the project, and files the owner form. The county confirmed in writing that its license and cost threshold is $40,000. A lien agent designation is listed on the county page only for manufactured, modular and single family dwellings, not for accessory buildings or alterations.",
   },
 
   {
@@ -975,12 +991,12 @@ export const RULES: Rule[] = [
     kind: "question",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Open question: does a stand-alone deck, addition or garage need plan review?",
-    statedTime: "Not confirmed",
-    sourceLabel: "Email to Catawba County (reply pending)",
+    title: "Plan review: only for metal framing, post and beam, or a change to commercial use",
+    statedTime: "A few hours to 10 days",
+    sourceLabel: "Catawba County written reply, Nov 2026",
     sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/plan-review/",
-    status: "unverified",
-    note: "The plan review page names commercial, townhouse and duplex projects only. Ask the Permit Center for a written answer. Until the county confirms, treat this as not confirmed.",
+    status: "verified",
+    note: "Answered by the county in writing. Plan review is only required for metal framed or metal truss structures, post and beam construction, or a change from residential to commercial use, and it needs sealed engineered drawings.",
   },
 
   {
@@ -990,12 +1006,12 @@ export const RULES: Rule[] = [
     kind: "question",
     projects: ["deck", "addition", "garage"],
     where: "county",
-    title: "Open question: review time, permit expiration and size exemptions",
-    statedTime: "Not confirmed",
-    sourceLabel: "Email to Catawba County (reply pending)",
+    title: "Permit validity: 6 months without an inspection, then one year from the latest inspection",
+    statedTime: "Valid 6 months without inspections",
+    sourceLabel: "Catawba County written reply, Nov 2026",
     sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/",
-    status: "unverified",
-    note: "No county page read states how long a permit takes, when a permit expires, or whether a small deck or shed is exempt from a building permit.",
+    status: "verified",
+    note: "Answered by the county in writing. A residential building permit is valid for 6 months without inspections. Once an inspection has happened (passed or failed), the expiration is extended to one year from the date of the most recent inspection. The county did not give a time for a standard building permit to be issued.",
   },
 
   {
@@ -1005,12 +1021,12 @@ export const RULES: Rule[] = [
     kind: "step",
     projects: ["deck", "addition", "garage"],
     where: "city",
-    title: "County Building Services does inspections inside the eight towns too",
+    title: "Building permits are always issued by the county; towns issue zoning permits",
     statedTime: "Not stated",
-    sourceLabel: "Catawba County Building Services page",
+    sourceLabel: "Catawba County written reply, Nov 2026; Building Services page",
     sourceUrl: "https://catawbacountync.gov/county-services/utilities-and-engineering/building-services/permit-services/",
     status: "verified",
-    note: "The county says its Building Services Division does inspections in the unincorporated areas and for Brookford, Catawba, Claremont, Conover, Hickory, Long View, Newton and Maiden. Zoning approval still comes from the town's planning office. The county's page does not say whether anything about the building permit application differs inside a town.",
+    note: "Answered by the county in writing. Building permits are always issued by the county, and municipalities issue zoning permits for residential properties. The county's Building Services Division does inspections in the unincorporated areas and in Brookford, Catawba, Claremont, Conover, Hickory, Long View, Newton and Maiden.",
   },
 
 ];

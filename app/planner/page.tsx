@@ -72,9 +72,12 @@ export default function PlannerPage() {
   const steps = rules.filter((r) => r.kind === "step");
   const questions = rules.filter((r) => r.kind === "question");
   const hasCountyStep = steps.some((r) => r.where === "county");
+  const agency = j?.agencyLabels ?? { city: "City or town", county: "County" };
+  const citySteps = steps.filter((r) => r.where === "city");
+  const countySteps = steps.filter((r) => r.where !== "city");
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <main className="route-wide mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
       <h1 className="tool-title text-3xl text-[#211b18]">Permivo route planner</h1>
       <p className="mt-1 text-gray-600">
@@ -144,18 +147,39 @@ export default function PlannerPage() {
           Reviews that may apply
         </h2>
         <p className="mt-1 text-sm text-gray-600">
-          The order and whether these can run at the same time are not confirmed.
+          Steps are grouped by agency. The order and whether these can run at the same time are not confirmed unless a step says so.
         </p>
-        <ul className="mt-3 space-y-3">
-          {steps.map((r) => (
-            <RuleCard key={r.id} rule={r} />
-          ))}
-        </ul>
-        {!hasCountyStep && (
-          <p className="mt-3 text-sm text-gray-600">
-            County steps for this project type have not been researched yet.
+        {j?.statedDays && (
+          <p className="mt-3 rounded-lg border border-orange-100 bg-white p-3 text-sm text-gray-700">
+            <span className="font-medium">What the agencies say about total time:</span> {j.statedDays.label}
           </p>
         )}
+        <div className={`route-grid mt-4${location === "city" ? " two" : ""}`}>
+          {location === "city" && (
+            <div>
+              <h3 className="text-base font-medium text-gray-900">{agency.city}</h3>
+              <ul className="mt-2 space-y-3">
+                {citySteps.map((r) => (
+                  <RuleCard key={r.id} rule={r} />
+                ))}
+              </ul>
+              {citySteps.length === 0 && (
+                <p className="mt-2 text-sm text-gray-600">No steps for this agency have been researched yet.</p>
+              )}
+            </div>
+          )}
+          <div>
+            <h3 className="text-base font-medium text-gray-900">{agency.county}</h3>
+            <ul className="mt-2 space-y-3">
+              {countySteps.map((r) => (
+                <RuleCard key={r.id} rule={r} />
+              ))}
+            </ul>
+            {!hasCountyStep && (
+              <p className="mt-2 text-sm text-gray-600">County steps for this project type have not been researched yet.</p>
+            )}
+          </div>
+        </div>
       </section>
 
       {questions.length > 0 && (

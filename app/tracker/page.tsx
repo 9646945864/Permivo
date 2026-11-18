@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import ToolHeader from "../components/ToolHeader";
+import { usePlace } from "../components/PlaceSelector";
+import { COVERED_COUNTIES } from "../../data/ncCounties";
+import { JURISDICTIONS, type JurisdictionId } from "../../data/rules";
 
 const KINDS = [
   "Application submitted",
@@ -33,12 +36,43 @@ interface Permit {
   id: string;
   name: string;
   type: string;
+  county?: string; // permits saved before counties were added are treated as Mecklenburg
   events: TrackedEvent[];
 }
 
 const STORAGE_KEY = "permivo-tracker-v1";
-// County’s stated typical average for residential plan review (CIRC email, November 2026).
-const COUNTY_STATED_DAYS = 21;
+const DEFAULT_COUNTY = "Mecklenburg";
+const statedFor = (county?: string) => JURISDICTIONS[(county ?? DEFAULT_COUNTY).toLowerCase() as JurisdictionId]?.statedDays;
+
+// What to do next, based on the most recent event. A suggestion, not an agency instruction.
+const NEXT_MOVE: Record<string, string> = {
+  "Application submitted": "Wait for the agency to start review, then log Review started.",
+  "Review started": "Log the next agency comment or the approval.",
+  "Comments received": "Respond to each comment, then log Resubmitted.",
+  "Resubmitted": "Log the next agency comment or the approval.",
+  "Hold placed": "Resolve the hold, then log Hold cleared.",
+  "Hold cleared": "Log the next agency step.",
+  "Approved": "Log Permit issued when you have it.",
+  "Permit issued": "Schedule inspections and log each result.",
+  "Inspection failed": "Fix the items, request a re-inspection and log it.",
+  "Inspection passed": "Request the next inspection.",
+  "Other": "Log the next agency step.",
+};
+
+function compareToStated(county: string | undefined, elapsed: number) {
+  const st = statedFor(county);
+  if (!st || (st.min === undefined && st.max === undefined)) return null;
+  const min = st.min ?? st.max!;
+  const max = st.max ?? st.min!;
+  if (min === max) {
+    const d = elapsed - min;
+    if (d === 0) return `Right at the stated ${min} days.`;
+    return d < 0 ? `${-d} days faster than the stated ${min} days.` : `${d} days slower than the stated ${min} days.`;
+  }
+  if (elapsed < min) return `${min - elapsed} days faster than the stated ${min} to ${max} days.`;
+  if (elapsed > max) return `${elapsed - max} days slower than the stated ${min} to ${max} days.`;
+  return `Within the stated ${min} to ${max} days.`;
+}
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const today = () => new Date().toLocaleDateString("en-CA");
@@ -72,11 +106,13 @@ function metrics(p: Permit) {
 
 function PermitCard({
   permit,
+  open,
   onAdd,
   onDeleteEvent,
   onDeletePermit,
 }: {
   permit: Permit;
+  open: boolean;
   onAdd: (id: string, ev: TrackedEvent) => void;
   onDeleteEvent: (permitId: string, eventId: string) => void;
   onDeletePermit: (id: string) => void;
@@ -92,12 +128,15 @@ function PermitCard({
     : m.issued
       ? `Issued in ${m.elapsed} days`
       : `Open ${m.elapsed} days`;
+  const lastKind = m.ev.length ? m.ev[m.ev.length - 1].kind : null;
+  const stated = statedFor(permit.county);
+  const comparison = m.issued ? compareToStated(permit.county, m.elapsed) : null;
 
   return (
-    <details className="rounded-lg border border-orange-100 bg-white">
+    <details open={open} className="rounded-lg border border-orange-100 bg-white">
       <summary className="flex cursor-pointer items-center justify-between gap-3 p-4">
         <span className="font-medium text-gray-900">
-          {permit.name} · {permit.type}
+          {permit.name} · {permit.type} · {permit.county ?? DEFAULT_COUNTY}
         </span>
         <span className="text-sm text-gray-600">{status}</span>
       </summary>
@@ -114,6 +153,18 @@ function PermitCard({
           )}
         </p>
 
+        {stated && (
+          <p className="mt-2 text-sm text-gray-700">
+            <span className="font-medium">Agency says:</span> {stated.label}
+            {comparison && <> <span className="font-medium">This permit:</span> issued in {m.elapsed} days. {comparison}</>}
+          </p>
+        )}
+        {!m.issued && lastKind && (
+          <p className="mt-2 rounded-md border border-orange-100 bg-orange-50 p-2 text-sm text-gray-800">
+            <span className="font-medium">Next move:</span> {NEXT_MOVE[lastKind] ?? "Log the next agency step."}
+          </p>
+        )}
+
         {m.ev.length > 0 ? (
           <ul className="mt-3 divide-y divide-gray-200">
             {m.ev.map((e) => (
@@ -125,6 +176,7 @@ function PermitCard({
                 <button
                   type="button"
                   aria-label="Remove event"
+                  data-noprint="1"
                   onClick={() => onDeleteEvent(permit.id, e.id)}
                   className="rounded border border-gray-300 px-2 text-gray-600"
                 >
@@ -137,7 +189,7 @@ function PermitCard({
           <p className="mt-3 text-sm text-gray-600">No events yet. Add the first one below.</p>
         )}
 
-        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="no-print mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
           <input
             type="date"
             aria-label="Date"
@@ -188,7 +240,7 @@ function PermitCard({
         <button
           type="button"
           onClick={() => onDeletePermit(permit.id)}
-          className="mt-3 rounded border border-gray-300 px-3 py-1 text-sm text-gray-600"
+          className="no-print mt-3 rounded border border-gray-300 px-3 py-1 text-sm text-gray-600"
         >
           Remove this permit
         </button>
@@ -204,6 +256,11 @@ export default function TrackerPage() {
   const [type, setType] = useState<string>(TYPES[0]);
   const [copyText, setCopyText] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [place] = usePlace();
+  const [county, setCounty] = useState<string | null>(null);
+  const [expand, setExpand] = useState(false);
+  const [printedOn, setPrintedOn] = useState("");
+  const newCounty = county ?? (COVERED_COUNTIES.includes(place) ? place : DEFAULT_COUNTY);
 
   useEffect(() => {
     try {
@@ -238,16 +295,25 @@ export default function TrackerPage() {
   function addPermit() {
     const n = name.trim();
     if (!n) return;
-    setPermits((p) => [...p, { id: uid(), name: n, type, events: [] }]);
+    setPermits((p) => [...p, { id: uid(), name: n, type, county: newCounty, events: [] }]);
     setName("");
+  }
+
+  function printTimeline() {
+    setPrintedOn(new Date().toLocaleDateString());
+    setExpand(true);
+    setTimeout(() => {
+      window.print();
+      setExpand(false);
+    }, 150);
   }
 
   async function copyData() {
     const clean = (s: string) => s.replace(/[\t\r\n]+/g, " ");
-    const rows = ["Project\tType\tDate\tParty\tEvent\tNote"];
+    const rows = ["Project\tType\tCounty\tDate\tParty\tEvent\tNote"];
     for (const p of permits) {
       for (const e of metrics(p).ev) {
-        rows.push([p.name, p.type, e.date, e.party, e.kind, e.note].map(clean).join("\t"));
+        rows.push([p.name, p.type, p.county ?? DEFAULT_COUNTY, e.date, e.party, e.kind, e.note].map(clean).join("\t"));
       }
     }
     const text = rows.join("\n");
@@ -264,6 +330,7 @@ export default function TrackerPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
+      <p className="print-only text-sm text-gray-700">Permivo permit timeline{printedOn ? ` · printed ${printedOn}` : ""}</p>
       <h1 className="tool-title text-3xl text-[#211b18]">Permivo tracker</h1>
       <p className="mt-1 text-gray-600">
         Log each step of a permit. Compare the real timeline with what the agencies say.
@@ -287,15 +354,25 @@ export default function TrackerPage() {
             <b>{totalHold}</b> total hold days
           </span>
         </p>
-        <p className="mt-2 text-sm text-gray-600">
-          Stated by the county: residential plan review typically averages about{" "}
-          {COUNTY_STATED_DAYS} days.
-          {avgDays !== null &&
-            ` Your issued permits average ${avgDays} days from application to issue.`}
+        {COVERED_COUNTIES.map((cn) => {
+          const mine = permits.filter((p) => (p.county ?? DEFAULT_COUNTY) === cn);
+          const st = statedFor(cn);
+          if (mine.length === 0 || !st) return null;
+          const done = mine.map(metrics).filter((m) => m.issued);
+          const a = avg(done.map((m) => m.elapsed));
+          return (
+            <p key={cn} className="mt-2 text-sm text-gray-600">
+              {cn} County says: {st.label}
+              {a !== null && ` Your issued ${cn} permits average ${a} days from application to issue.`}
+            </p>
+          );
+        })}
+        <p className="mt-2 text-xs text-gray-500">
+          An agency&apos;s stated time may cover only part of the process, so treat the comparison as a guide.
         </p>
       </section>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+      <div className="no-print mt-4 flex flex-col gap-2 sm:flex-row">
         <input
           aria-label="Project nickname"
           placeholder="Project nickname (no names or addresses)"
@@ -304,6 +381,16 @@ export default function TrackerPage() {
           onKeyDown={(e) => e.key === "Enter" && addPermit()}
           className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
         />
+        <select
+          aria-label="County"
+          value={newCounty}
+          onChange={(e) => setCounty(e.target.value)}
+          className="rounded border border-gray-300 px-2 py-2 text-sm"
+        >
+          {COVERED_COUNTIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
         <select
           aria-label="Project type"
           value={type}
@@ -331,6 +418,7 @@ export default function TrackerPage() {
             <PermitCard
               key={p.id}
               permit={p}
+              open={expand}
               onAdd={(id, ev) =>
                 setPermits((all) =>
                   all.map((x) => (x.id === id ? { ...x, events: [...x.events, ev] } : x))
@@ -349,7 +437,14 @@ export default function TrackerPage() {
         )}
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <div className="no-print mt-6 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={printTimeline}
+          className="rounded border border-orange-800 px-3 py-2 text-sm text-orange-800"
+        >
+          Print or save as PDF
+        </button>
         <button
           type="button"
           onClick={copyData}

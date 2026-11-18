@@ -7,6 +7,7 @@ const TOOLS = [
   { href: "/planner", label: "Planner" },
   { href: "/checklist", label: "Checklist" },
   { href: "/ask", label: "Ask" },
+  { href: "/review", label: "Review" },
   { href: "/tracker", label: "Tracker" },
 ];
 

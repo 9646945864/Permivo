@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import ToolHeader from "../components/ToolHeader";
+import { track } from "../components/analytics";
 import { PartialNote, PlaceSelector, jurisdictionFor, usePlace } from "../components/PlaceSelector";
 import { STATUS_LABELS, type Status } from "../../data/rules";
 import type { AskResult } from "../../data/askContext";
@@ -50,6 +51,7 @@ export default function AskPage() {
     setLoading(true);
     setError("");
     setResult(null);
+    track("ask_submitted", { county: place, project: project || "any" });
     try {
       const res = await fetch("/api/ask", {
         method: "POST",

@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { identify } from "./analytics";
 import { SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 import { AuthCtx, useAuthInfo } from "./AuthState";
 
@@ -8,6 +9,9 @@ import { AuthCtx, useAuthInfo } from "./AuthState";
 
 export function ClerkAuthBridge({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn, userId } = useAuth();
+  useEffect(() => {
+    if (isLoaded) identify(isSignedIn ? userId ?? null : null);
+  }, [isLoaded, isSignedIn, userId]);
   return (
     <AuthCtx.Provider value={{ enabled: true, loaded: isLoaded, signedIn: Boolean(isSignedIn), userId: userId ?? null }}>
       {children}

@@ -6,6 +6,7 @@ import { NotCovered, PartialNote, PlaceSelector, ReportLink, StatewideRules, isC
 import { useEffect, useMemo, useState } from "react";
 import { syncMessage, useSyncedState } from "../components/useSyncedState";
 import { useAuthInfo } from "../components/AuthState";
+import { track } from "../components/analytics";
 import { PROJECT_LABELS, STATUS_LABELS, type JurisdictionId, type Location, type ProjectType, type Status } from "../../data/rules";
 import { GROUP_LABELS, GROUP_ORDER, itemsFor } from "../../data/checklist";
 
@@ -50,6 +51,7 @@ export default function ChecklistPage() {
   const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
 
   function toggle(id: string) {
+    track("checklist_item_toggled", { project, location, done: !done[keyFor(id)] });
     setDone((prev) => ({ ...prev, [keyFor(id)]: !prev[keyFor(id)] }));
   }
 

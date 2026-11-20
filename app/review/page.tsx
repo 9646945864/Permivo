@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import ToolHeader from "../components/ToolHeader";
+import { track } from "../components/analytics";
 import { NotCovered, PartialNote, PlaceSelector, isCovered, usePlace } from "../components/PlaceSelector";
 import { STATUS_LABELS, type Status } from "../../data/rules";
 import type { ReviewResult, ReviewState } from "../../data/reviewContext";
@@ -43,6 +44,7 @@ export default function ReviewPage() {
     setLoading(true);
     setError("");
     setResult(null);
+    track("review_submitted", { county: place, project, location });
     try {
       const res = await fetch("/api/review", {
         method: "POST",

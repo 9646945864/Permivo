@@ -4,6 +4,7 @@ import { useState } from "react";
 import ToolHeader from "../components/ToolHeader";
 import { useAuthInfo } from "../components/AuthState";
 import { syncMessage, useSyncedState } from "../components/useSyncedState";
+import { track } from "../components/analytics";
 import { usePlace } from "../components/PlaceSelector";
 import { COVERED_COUNTIES } from "../../data/ncCounties";
 import { JURISDICTIONS, type JurisdictionId } from "../../data/rules";
@@ -231,6 +232,7 @@ function PermitCard({
             onClick={() => {
               if (!date) return;
               onAdd(permit.id, { id: uid(), date, party, kind, note: note.trim() });
+              track("tracker_event_logged", { kind, party });
               setNote("");
             }}
             className="rounded bg-orange-800 px-3 py-2 text-sm font-medium text-white sm:col-span-3"
@@ -283,6 +285,7 @@ export default function TrackerPage() {
     const n = name.trim();
     if (!n) return;
     setPermits((p) => [...p, { id: uid(), name: n, type, county: newCounty, events: [] }]);
+    track("tracker_permit_added", { county: newCounty, type });
     setName("");
   }
 

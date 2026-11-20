@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ToolHeader from "../components/ToolHeader";
+import { useAuthInfo } from "../components/AuthState";
+import { syncMessage, useSyncedState } from "../components/useSyncedState";
 import { usePlace } from "../components/PlaceSelector";
 import { COVERED_COUNTIES } from "../../data/ncCounties";
 import { JURISDICTIONS, type JurisdictionId } from "../../data/rules";
@@ -250,8 +252,15 @@ function PermitCard({
 }
 
 export default function TrackerPage() {
-  const [permits, setPermits] = useState<Permit[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [permits, setPermits, syncStatus] = useSyncedState<Permit[]>({
+    localKey: STORAGE_KEY,
+    api: "/api/tracker",
+    field: "permits",
+    initial: [],
+    parse: (raw) => (Array.isArray(raw) ? (raw as Permit[]) : null),
+    isEmpty: (v) => v.length === 0,
+  });
+  const auth = useAuthInfo();
   const [name, setName] = useState("");
   const [type, setType] = useState<string>(TYPES[0]);
   const [copyText, setCopyText] = useState<string | null>(null);
@@ -261,28 +270,6 @@ export default function TrackerPage() {
   const [expand, setExpand] = useState(false);
   const [printedOn, setPrintedOn] = useState("");
   const newCounty = county ?? (COVERED_COUNTIES.includes(place) ? place : DEFAULT_COUNTY);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setPermits(parsed as Permit[]);
-      }
-    } catch {
-      // ignore unreadable storage
-    }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(permits));
-    } catch {
-      // storage may be unavailable
-    }
-  }, [permits, loaded]);
 
   const all = permits.map(metrics);
   const issued = all.filter((m) => m.issued);
@@ -464,7 +451,7 @@ export default function TrackerPage() {
         />
       )}
       <p className="mt-4 text-sm text-gray-600">
-        Entries are saved in this browser only. Use nicknames, not owner names or addresses. Copy
+        {syncMessage(syncStatus, auth.enabled)} Use nicknames, not owner names or addresses. Copy
         the data now and then as a backup.
       </p>
     </main>

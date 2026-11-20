@@ -4,6 +4,8 @@ import Link from "next/link";
 import ToolHeader from "../components/ToolHeader";
 import { NotCovered, PartialNote, PlaceSelector, ReportLink, StatewideRules, isCovered, jurisdictionFor, usePlace } from "../components/PlaceSelector";
 import { useEffect, useMemo, useState } from "react";
+import { syncMessage, useSyncedState } from "../components/useSyncedState";
+import { useAuthInfo } from "../components/AuthState";
 import { PROJECT_LABELS, STATUS_LABELS, type JurisdictionId, type Location, type ProjectType, type Status } from "../../data/rules";
 import { GROUP_LABELS, GROUP_ORDER, itemsFor } from "../../data/checklist";
 
@@ -20,32 +22,17 @@ const STATUS_STYLES: Record<Status, string> = {
 export default function ChecklistPage() {
   const [project, setProject] = useState<ProjectType>("deck");
   const [location, setLocation] = useState<Location>("city");
-  const [done, setDone] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
+  const auth = useAuthInfo();
+  const [done, setDone, syncStatus] = useSyncedState<Record<string, boolean>>({
+    localKey: STORAGE_KEY,
+    api: "/api/checklist",
+    field: "done",
+    initial: {},
+    parse: (raw) => (raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, boolean>) : null),
+    isEmpty: (v) => Object.keys(v).length === 0,
+  });
   const [place, setPlace] = usePlace();
   const covered = isCovered(place);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") setDone(parsed as Record<string, boolean>);
-      }
-    } catch {
-      // ignore unreadable storage
-    }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
-    } catch {
-      // storage may be unavailable
-    }
-  }, [done, loaded]);
 
   const j = jurisdictionFor(place);
   const labels = j?.locationLabels ?? { city: "Inside the city or town", outside: "Elsewhere in the county" };
@@ -197,7 +184,7 @@ export default function ChecklistPage() {
       </>)}
       <StatewideRules />
       <p className="mt-8 text-sm text-gray-600">
-        Ticks are saved in this browser only. Next: use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> to
+        Ticks: {syncMessage(syncStatus, auth.enabled).toLowerCase()} Next: use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> to
         see which reviews apply, and the <Link href="/tracker" className="text-orange-800 underline">tracker</Link> to log dates.
       </p>
     </main>

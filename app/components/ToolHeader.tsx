@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthControls } from "./AuthState";
 
 const TOOLS = [
   { href: "/planner", label: "Planner" },
@@ -38,6 +39,7 @@ export default function ToolHeader() {
             </Link>
           );
         })}
+        <AuthControls />
       </nav>
     </header>
   );

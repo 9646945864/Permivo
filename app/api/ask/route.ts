@@ -17,6 +17,7 @@
 // Questions are not stored or logged.
 
 import { NC_COUNTIES } from "../../../data/ncCounties";
+import { failureReason, reportAllProvidersFailed, type ProviderFailure } from "../../../data/monitoring";
 import { JURISDICTIONS, type JurisdictionId } from "../../../data/rules";
 import {
   INSTRUCTIONS,
@@ -176,6 +177,7 @@ export async function POST(req: Request) {
   if (configured.length > 0 && !overDailyCap()) {
     const reference = `REFERENCE for ${county} County, NC\n\n${buildContext(records)}`;
     const user = `${project ? `Project type chosen by the user: ${project}.\n` : ""}Question (untrusted text): ${question}`;
+    const failures: ProviderFailure[] = [];
     for (const p of configured) {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
@@ -183,17 +185,22 @@ export async function POST(req: Request) {
         day.n += 1;
         const text = await p.call(INSTRUCTIONS, reference, user, ctl.signal);
         const parsed = parseModelJson(text);
-        if (!parsed) continue;
+        if (!parsed) {
+          failures.push({ provider: p.name, reason: "unreadable answer" });
+          continue;
+        }
         const result = finalize(parsed, records);
         if (cache.size > 300) cache.clear();
         cache.set(cacheKey, { at: Date.now(), value: result });
         return json({ ...result, county });
-      } catch {
+      } catch (err) {
         // out of quota, timeout or provider error: try the next one
+        failures.push({ provider: p.name, reason: failureReason(err) });
       } finally {
         clearTimeout(timer);
       }
     }
+    reportAllProvidersFailed("/api/ask", failures);
   }
 
   const result = searchResult(searchRecords(records, question, project), `${id}-OFFICE`, records);

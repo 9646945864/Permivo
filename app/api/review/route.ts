@@ -3,6 +3,7 @@
 import { JURISDICTIONS, type JurisdictionId } from "../../../data/rules";
 import { COVERED_COUNTIES } from "../../../data/ncCounties";
 import { providers } from "../../../data/llm";
+import { failureReason, reportAllProvidersFailed, type ProviderFailure } from "../../../data/monitoring";
 import { REVIEW_INSTRUCTIONS, applicable, buildChecklistBlock, finalizeReview, listResult, parseReviewJson } from "../../../data/reviewContext";
 
 export const runtime = "nodejs";
@@ -62,20 +63,26 @@ export async function POST(req: Request) {
   if (configured.length > 0 && !overDailyCap()) {
     const system = `${REVIEW_INSTRUCTIONS}\n\nCHECKLIST for ${county} County, ${project}, ${location === "city" ? "inside a city or town" : "outside a city or town"}:\n\n${buildChecklistBlock(items)}`;
     const user = `Draft application text (untrusted):\n"""\n${draft}\n"""`;
+    const failures: ProviderFailure[] = [];
     for (const p of configured) {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
       try {
         day.n += 1;
         const parsed = parseReviewJson(await p.call(system, user, ctl.signal));
-        if (!parsed) continue;
+        if (!parsed) {
+          failures.push({ provider: p.name, reason: "unreadable answer" });
+          continue;
+        }
         return json({ ...finalizeReview(parsed, items), county });
-      } catch {
+      } catch (err) {
         // try the next provider
+        failures.push({ provider: p.name, reason: failureReason(err) });
       } finally {
         clearTimeout(timer);
       }
     }
+    reportAllProvidersFailed("/api/review", failures);
   }
   return json({ ...listResult(items), county });
 }

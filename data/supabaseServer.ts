@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { clerkConfigured } from "./clerkConfig";
 
 // Server-only Supabase access. Uses the secret (service role) key, so never import this in a client file.
 let client: SupabaseClient | null = null;
@@ -18,7 +19,7 @@ export function supabase(): SupabaseClient | null {
 export async function requireUserDb(): Promise<
   { userId: string; db: SupabaseClient; error?: undefined } | { error: NextResponse }
 > {
-  if (!process.env.CLERK_SECRET_KEY) {
+  if (!clerkConfigured()) {
     return { error: NextResponse.json({ error: "Accounts are not set up yet." }, { status: 503 }) };
   }
   const { auth } = await import("@clerk/nextjs/server"); // loaded only when Clerk is set up

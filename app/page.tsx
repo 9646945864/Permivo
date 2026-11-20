@@ -1,269 +1,263 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import "./globals.css";
-import { PROJECT_LABELS, RULES as ALL_RULES, STATUS_LABELS } from "../data/rules";
-
-// The home page showcases Mecklenburg County. Other counties appear in the planner and checklist.
-const RULES = ALL_RULES.filter((rule) => rule.jurisdiction === "mecklenburg");
+import {
+  JURISDICTIONS,
+  PROJECT_LABELS,
+  RULES,
+  STATUS_LABELS,
+  rulesFor,
+  type JurisdictionId,
+  type Location,
+  type ProjectType,
+} from "../data/rules";
+import { CHECKLIST, itemsFor } from "../data/checklist";
+import { DIRECTORY_COUNTIES } from "../data/ncCounties";
 import { FEEDBACK_URL } from "../data/site";
 
-// The feedback link lives in data/site.ts. Until it is set the button shows "Feedback form coming soon".
-
-type Scene = { num: string; label: string; kicker: string; title: string; accent: string; body: string; note: string };
-
-const scenes: Scene[] = [
-  { num: "01", label: "The plan", kicker: "Start with the plan", title: "A deck, a drawing, and a permit question.", accent: "DRAW IT", body: "Tell Permivo what you’re building and where. See which reviews may apply before you start.", note: "Project details → likely reviews" },
-  { num: "02", label: "The route", kicker: "Follow the route", title: "Two agencies. One clear route.", accent: "ROUTE IT", body: "See city and county steps side by side, with the times agencies state and a link to every source.", note: "City + county → one view" },
-  { num: "03", label: "The wait", kicker: "Track the wait", title: "Know where it stands.", accent: "TRACK IT", body: "Log every comment, hold, and resubmission. Compare your real timeline with what agencies say.", note: "Submitted → in review → done" },
-  { num: "04", label: "The seal", kicker: "Keep the proof", title: "Approved, with the dates to prove it.", accent: "PROVE IT", body: "Every rule shows its source and whether it’s verified. Anything unconfirmed is marked that way.", note: "Source-backed → easy to trust" },
+const COUNTIES: { id: JurisdictionId; label: string }[] = [
+  { id: "mecklenburg", label: "Mecklenburg" },
+  { id: "cabarrus", label: "Cabarrus" },
+  { id: "catawba", label: "Catawba" },
 ];
+const PROJECTS: ProjectType[] = ["deck", "addition", "garage"];
 
-function Mark() {
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img className="brand-logo" src="/logo/permivo-logo-a.svg" alt="" aria-hidden="true" />;
-}
+// Example only: the item titles are real checklist items, the results are illustrative.
+const EXAMPLE_STATES = ["covered", "covered", "missing", "unclear", "missing", "covered"] as const;
+const EXAMPLE_LABEL = { covered: "Covered", missing: "Missing", unclear: "Unclear" } as const;
 
-function SceneArt({ index, tilt }: { index: number; tilt: { x: number; y: number } }) {
+function RouteDemo() {
+  const [county, setCounty] = useState<JurisdictionId>("mecklenburg");
+  const [project, setProject] = useState<ProjectType>("deck");
+  const [location, setLocation] = useState<Location>("city");
+  const j = JURISDICTIONS[county];
+  const labels = j?.locationLabels ?? { city: "Inside the city or town", outside: "Elsewhere in the county" };
+  const agency = j?.agencyLabels ?? { city: "City or town", county: "County" };
+  const steps = useMemo(() => rulesFor(project, location, county), [project, location, county]);
+  const shown = steps.slice(0, 5);
+  const more = steps.length - shown.length;
+  const key = `${county}-${project}-${location}`;
+
   return (
-    <div className="art-shell" style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}>
-      <div className="art-sky" />
-      <div className={`art-object object-${index}`}>
-        {index === 0 && <><div className="house-roof" /><div className="house" /><div className="blueprint" /></>}
-        {index === 1 && <><div className="agency agency-left">CITY</div><div className="agency agency-right">COUNTY</div><div className="route-line" /><div className="route-dot" /></>}
-        {index === 2 && <><div className="calendar"><div className="calendar-top" /><div className="calendar-grid">{Array.from({ length: 16 }, (_, i) => <i key={i} className={i < 7 ? "filled" : ""} />)}</div></div><div className="clock" aria-hidden="true" /></>}
-        {index === 3 && <><div className="certificate"><b>VERIFIED</b><span>source-backed rules</span></div><div className="seal">✓</div><i className="confetti c1" /><i className="confetti c2" /><i className="confetti c3" /></>}
+    <div className="v2-route" aria-labelledby="route-title">
+      <div className="v2-route-bar">
+        <h2 id="route-title" className="v2-route-title">Your permit route</h2>
+        <div className="v2-seg" role="group" aria-label="County">
+          {COUNTIES.map((c) => (
+            <button key={c.id} type="button" aria-pressed={county === c.id} onClick={() => setCounty(c.id)}>{c.label}</button>
+          ))}
+        </div>
+        <div className="v2-seg" role="group" aria-label="Project">
+          {PROJECTS.map((p) => (
+            <button key={p} type="button" aria-pressed={project === p} onClick={() => setProject(p)}>{PROJECT_LABELS[p]}</button>
+          ))}
+        </div>
+        <div className="v2-seg" role="group" aria-label="Location">
+          {(["city", "outside"] as Location[]).map((l) => (
+            <button key={l} type="button" aria-pressed={location === l} onClick={() => setLocation(l)}>{labels[l]}</button>
+          ))}
+        </div>
       </div>
-      <div className="art-ground" />
-      <div className="art-caption"><span>{scenes[index].accent}</span><small>{scenes[index].note}</small></div>
+
+      <ol className="v2-steps" key={key}>
+        {shown.map((r, i) => (
+          <li key={r.id} className={r.status === "verified" ? "ok" : "open"} style={{ ["--i" as string]: i }}>
+            <div className="v2-step-head">
+              <strong>{r.title}</strong>
+              <span className="v2-chip" data-s={r.status}>{STATUS_LABELS[r.status]}</span>
+            </div>
+            <p className="v2-step-meta">
+              {r.where === "city" ? agency.city : agency.county}. Stated time: {r.statedTime}
+            </p>
+            <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="v2-src">{r.sourceLabel}</a>
+          </li>
+        ))}
+      </ol>
+
+      <div className="v2-route-foot">
+        {j?.statedDays && <p><b>What the agencies say:</b> {j.statedDays.label}</p>}
+        <Link href="/planner" className="v2-btn v2-btn-ink">
+          {more > 0 ? `See all ${steps.length} steps in the planner` : "Open the planner"}
+        </Link>
+      </div>
     </div>
   );
 }
 
 export default function Home() {
-  const [scene, setScene] = useState(0);
-  const [filter, setFilter] = useState<"all" | "verified" | "open">("all");
-  const [showAll, setShowAll] = useState(true);
-  const [showSceneDetails, setShowSceneDetails] = useState(true);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [darkMode, setDarkMode] = useState(false);
-  const [pageReady, setPageReady] = useState(false);
-  const stageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem("permivo-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const nextDarkMode = savedTheme ? savedTheme === "dark" : prefersDark;
-    setDarkMode(nextDarkMode);
-    document.documentElement.dataset.theme = nextDarkMode ? "dark" : "light";
-    requestAnimationFrame(() => setPageReady(true));
+  const verified = RULES.filter((r) => r.status === "verified").length;
+  const sampleRules = useMemo(() => {
+    const m = RULES.filter((r) => r.jurisdiction === "mecklenburg" && r.kind === "step");
+    const pick = [m.find((r) => r.status === "verified"), m.find((r) => r.status === "partly"), RULES.find((r) => r.jurisdiction === "mecklenburg" && r.status === "unverified")];
+    return pick.filter((r): r is NonNullable<typeof r> => !!r);
   }, []);
-
-  function toggleTheme() {
-    const nextDarkMode = !darkMode;
-    setDarkMode(nextDarkMode);
-    document.documentElement.dataset.theme = nextDarkMode ? "dark" : "light";
-    window.localStorage.setItem("permivo-theme", nextDarkMode ? "dark" : "light");
-  }
-
-  const verifiedCount = RULES.filter((rule) => rule.status === "verified").length;
-  const filteredRules = useMemo(
-    () => RULES.filter((rule) => filter === "all" || (filter === "verified" ? rule.status === "verified" : rule.status !== "verified")),
-    [filter]
-  );
-  const current = scenes[scene];
-
-  function handleMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (!stageRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const rect = stageRef.current.getBoundingClientRect();
-    setTilt({
-      x: Number((((event.clientY - rect.top) / rect.height) * -8 + 4).toFixed(2)),
-      y: Number((((event.clientX - rect.left) / rect.width) * 12 - 6).toFixed(2)),
-    });
-  }
-
-  function handleStoryKey(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "ArrowDown" || event.key === "ArrowRight") setScene((value) => Math.min(scenes.length - 1, value + 1));
-    if (event.key === "ArrowUp" || event.key === "ArrowLeft") setScene((value) => Math.max(0, value - 1));
-  }
+  const exampleItems = useMemo(() => itemsFor("deck", "city", "mecklenburg").slice(0, 6), []);
 
   return (
-    <main className={`home-page page-shell ${pageReady ? "is-ready" : ""}`}>
-      <header className="site-header">
-        <Link href="/" className="brand" aria-label="Permivo home"><Mark /><span>permivo</span></Link>
-        <nav>
-          <a href="#tools">Tools</a>
-          <a href="#status">Status</a>
-          <Link href="/planner" className="nav-tool-link">Planner</Link>
-          <Link href="/checklist" className="nav-tool-link">Checklist</Link>
-          <Link href="/ask" className="nav-tool-link">Ask</Link>
-          <Link href="/tracker" className="nav-tool-link">Tracker</Link>
-          <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode}>
-            <span className="theme-icon">{darkMode ? "☼" : "☾"}</span>
-            <span className="theme-label">{darkMode ? "Light" : "Dark"}</span>
-          </button>
-          <Link href="/planner" className="header-cta">Try the planner <span>↗</span></Link>
-        </nav>
+    <main className="home-page v2">
+      <header className="v2-head">
+        <div className="v2-wrap v2-head-in">
+          <Link href="/" className="v2-brand" aria-label="Permivo home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo/permivo-logo-a.svg" alt="" width={28} height={28} />
+            <span>permivo</span>
+          </Link>
+          <nav aria-label="Main" className="v2-nav">
+            <Link href="/planner">Planner</Link>
+            <Link href="/checklist">Checklist</Link>
+            <Link href="/review">Review</Link>
+            <Link href="/ask">Ask</Link>
+            <Link href="/tracker">Tracker</Link>
+          </nav>
+          <Link href="/planner" className="v2-btn v2-btn-or v2-head-cta">Try it free</Link>
+        </div>
       </header>
 
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="eyebrow">PERMITS, WITHOUT THE GUESSWORK</p>
-          <h1 id="hero-title">The clearer route to <em>getting built.</em></h1>
-          <p className="hero-lede">Permivo helps small residential contractors understand what comes next — before a permit turns into a surprise.</p>
-          <div className="hero-actions">
-            <Link href="/planner" className="primary-button">Plan a project <span>→</span></Link>
-            <a href="#how-it-works" className="text-link">See how it works <span>↓</span></a>
+      <section className="v2-wrap v2-hero" aria-labelledby="hero-title">
+        <div className="v2-hero-copy">
+          <h1 id="hero-title">Know your permit route before you quote the job.</h1>
+          <p className="v2-lede">
+            Permivo shows which reviews apply to your deck, addition or garage, how long the agencies say each one takes, and what to submit so the
+            application does not come back. Every rule links to its source.
+          </p>
+          <div className="v2-actions">
+            <Link href="/planner" className="v2-btn v2-btn-or">Plan a project</Link>
+            <Link href="/review" className="v2-btn v2-btn-line">Check my application draft</Link>
           </div>
-          <div className="trust-row"><span><b>01</b> Mecklenburg County</span><span><b>●</b> Sources, not guesses</span></div>
+          <p className="v2-fine">Free while we build. Live for Mecklenburg, Cabarrus and Catawba counties, NC.</p>
         </div>
-        <div className="hero-aside">
-          <div className="hero-image-wrap">
-            <div className="hero-image-label">AI-ASSISTED PERMIT ROUTING</div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo/permit-ai-hero.png"
-              alt="A small residential contractor using AI-assisted permit guidance beside a house plan"
-              className="hero-image"
-              width={800}
-              height={600}
-            />
-          </div>
-          <div className="aside-stamp">NC<br /><b>✦</b><br />BUILD<br />BETTER</div>
-        </div>
+        <RouteDemo />
       </section>
 
-      <section id="how-it-works" className="story-section">
-        <div className="story-intro">
-          <p className="eyebrow">A BETTER WAY THROUGH</p>
-          <h2>Four moments that make the process <em>feel lighter.</em></h2>
-          <p>Use the controls or arrow keys to move through the route.</p>
-        </div>
-        <div className="story-pin">
-          <div className="story-grid">
-            <div className="story-controls" role="tablist" aria-label="How Permivo works" onKeyDown={handleStoryKey}>
-              {scenes.map((item, index) => (
-                <button key={item.num} className={scene === index ? "active" : ""} onClick={() => setScene(index)} role="tab" aria-selected={scene === index}>
-                  <span>{item.num}</span><strong>{item.label}</strong><i />
-                </button>
-              ))}
+      <section className="v2-wrap v2-problems" aria-labelledby="prob-title">
+        <h2 id="prob-title">Permits cost contractors time before they cost fees.</h2>
+        <div className="v2-prob-list">
+          <article>
+            <h3>The application comes back with comments.</h3>
+            <div>
+              <p>A missing plan detail turns into a correction round, and the job waits. Paste your application description and Permivo checks it against the county&apos;s own checklist before you submit.</p>
+              <Link href="/review" className="v2-link">Review a draft</Link>
             </div>
-            <div className="story-card">
-              <div className="story-text" key={scene}>
-                <p className="eyebrow orange">{current.num} · {current.kicker.toUpperCase()}</p>
-                <h3>{current.title}</h3>
-                <p>{current.body}</p>
-                {scene === 2 && (
-                  <div className="scene-details">
-                    <div><b>Current status</b><span>Review timeline is active</span></div>
-                    <div><b>Next move</b><span>Log the next agency comment</span></div>
-                    <button type="button" onClick={() => setShowSceneDetails((value) => !value)}>{showSceneDetails ? "Hide details ↑" : "Show details ↓"}</button>
-                  </div>
-                )}
-                {scene !== 2 || showSceneDetails ? (
-                  <Link href="/planner" className="text-link">Explore the planner <span>→</span></Link>
-                ) : (
-                  <button type="button" className="text-link detail-reopen" onClick={() => setShowSceneDetails(true)}>Show details <span>↓</span></button>
-                )}
-              </div>
-              <div className="art-stage" ref={stageRef} onMouseMove={handleMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })}>
-                <SceneArt index={scene} tilt={tilt} />
-              </div>
+          </article>
+          <article>
+            <h3>You quote a start date you can&apos;t back up.</h3>
+            <div>
+              <p>Agencies publish different times for different steps. Permivo lays out each step with the time the agency states, so your quote starts from the source and not from a guess.</p>
+              <Link href="/planner" className="v2-link">Open the planner</Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="tools" className="tools-section">
-        <div className="section-heading">
-          <div><p className="eyebrow">05 · THE TOOLS</p><h2>Four tools, <em>one route.</em></h2></div>
-          <p>Everything you need to move from “what if?” to “what’s next?”</p>
-        </div>
-        <div className="tool-grid">
-          <Link href="/planner" className="tool-card featured">
-            <span className="tool-number">01 / LIVE</span>
-            <h3>Route planner <span>↗</span></h3>
-            <p>Pick a project and location. See which reviews may apply, with stated times and sources.</p>
-            <div className="card-arrow">Open planner →</div>
-          </Link>
-          <Link href="/tracker" className="tool-card">
-            <span className="tool-number">02 / LIVE</span>
-            <h3>Permit tracker <span>↗</span></h3>
-            <p>Log dates, comments, and holds. Keep your real timeline in view.</p>
-            <div className="card-arrow">Open tracker →</div>
-          </Link>
-          <Link href="/checklist" className="tool-card">
-            <span className="tool-number">03 / LIVE</span>
-            <h3>Readiness checklist <span>↗</span></h3>
-            <p>See what each requirement is, why it exists, and how to complete it. Tick items off as you go.</p>
-            <div className="card-arrow">Open checklist →</div>
-          </Link>
-          <Link href="/ask" className="tool-card">
-            <span className="tool-number">04 / NEW</span>
-            <h3>Ask Permivo <span>↗</span></h3>
-            <p>Ask a permit question in plain words. Answers come only from checked rules, with the source and how sure we are.</p>
-            <div className="card-arrow">Ask a question →</div>
-          </Link>
-        </div>
-      </section>
-
-      <section id="status" className="status-section">
-        <div className="section-heading">
-          <div><p className="eyebrow">06 · CHECKED</p><h2>Clarity you can <em>act on.</em></h2></div>
-          <p>We label what’s verified, what’s likely, and what still needs a call.</p>
-        </div>
-        <div className="status-layout">
-          <div className="status-score">
-            <div className="score-ring"><strong>{verifiedCount}</strong><span>of {RULES.length}</span></div>
-            <p>rules verified by an official source or written agency reply.</p>
-            <button className="filter-button" onClick={() => setShowAll(!showAll)}>
-              {showAll ? "Hide details" : "View status details"} <span>{showAll ? "↑" : "↓"}</span>
-            </button>
-          </div>
-          <div className="status-list">
-            <div className="filter-tabs" role="tablist">
-              {(["all", "verified", "open"] as const).map((item) => (
-                <button key={item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>
-                  {item === "all" ? "All rules" : item === "verified" ? "Verified" : "To confirm"}
-                </button>
-              ))}
+          </article>
+          <article>
+            <h3>Two agencies, and nobody tells you where it stands.</h3>
+            <div>
+              <p>Log each comment, hold and resubmission. Permivo compares your real timeline with what the county states, and prints a dated record you can show a client.</p>
+              <Link href="/tracker" className="v2-link">Open the tracker</Link>
             </div>
-            {showAll && (
-              <div className="rule-list">
-                {filteredRules.map((rule) => (
-                  <div className="rule-row" key={rule.id}>
-                    <span className={`status-dot ${rule.status}`} />
-                    <div>
-                      <b>{rule.title}</b>
-                      <small>{rule.projects.map((p) => PROJECT_LABELS[p]).join(", ")} · {rule.note}</small>
-                    </div>
-                    <span className="rule-status">{STATUS_LABELS[rule.status]}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+          </article>
+        </div>
+      </section>
+
+      <section className="v2-dark" aria-labelledby="rev-title">
+        <div className="v2-wrap v2-rev">
+          <div>
+            <h2 id="rev-title">Find the gaps before the county does.</h2>
+            <p className="v2-lede-d">
+              Write the application the way you would normally describe the job. Permivo marks each checklist item as covered, missing or unclear, suggests edits,
+              and gives you a cleaner version with blanks where information is missing. It never invents measurements.
+            </p>
+            <Link href="/review" className="v2-btn v2-btn-or">Review my draft</Link>
+          </div>
+          <div className="v2-sheet" aria-label="Example review result">
+            <p className="v2-sheet-tag">Example. Mecklenburg County, deck.</p>
+            <blockquote>
+              Build a 12 by 16 ground-level deck on the rear of a single-family home. Pressure-treated framing, 6x6 posts on poured concrete footings, ledger
+              bolted to the house band board. Owner is acting as the contractor.
+            </blockquote>
+            <ul>
+              {exampleItems.map((it, i) => {
+                const s = EXAMPLE_STATES[i] ?? "covered";
+                return (
+                  <li key={it.id}>
+                    <span>{it.title}</span>
+                    <span className="v2-state" data-s={s}>{EXAMPLE_LABEL[s]}</span>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </section>
 
-      <section className="feedback-section" id="feedback">
-        <div><p className="eyebrow orange">07 · FEEDBACK</p><h2>Help make the next step <em>clearer.</em></h2></div>
-        <div>
-          <p>We’re starting with small residential contractors in Mecklenburg County. If you’ve pulled a permit recently, your experience tells us what to build next.</p>
-          {FEEDBACK_URL ? (
-            <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="outline-button">Share your experience <span>↗</span></a>
-          ) : (
-            <span className="outline-button">Feedback form coming soon</span>
-          )}
+      <section className="v2-wrap v2-trust" aria-labelledby="trust-title">
+        <div className="v2-trust-copy">
+          <h2 id="trust-title">If we haven&apos;t confirmed it, we say so.</h2>
+          <p>
+            {verified} of {RULES.length} rules are confirmed by an official county page or a written reply from county staff, and {CHECKLIST.length} checklist items
+            are tied to a named source. Anything else is marked partly verified or not confirmed, with who to call. Third-party websites and chatbots are never
+            treated as proof.
+          </p>
+          <p className="v2-fine">An early product. Not legal advice. The county&apos;s answer always decides.</p>
+        </div>
+        <div className="v2-recs">
+          {sampleRules.map((r) => (
+            <article key={r.id} className="v2-rec">
+              <div className="v2-step-head">
+                <strong>{r.title}</strong>
+                <span className="v2-chip" data-s={r.status}>{STATUS_LABELS[r.status]}</span>
+              </div>
+              <p className="v2-step-meta">Stated time: {r.statedTime}</p>
+              <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" className="v2-src">{r.sourceLabel}</a>
+              <p className="v2-fine">Checked {r.checkedOn}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      <footer>
-        <Link href="/" className="brand"><Mark /><span>permivo</span></Link>
-        <span>Early prototype · Not legal advice</span>
-        <span><Link href="/planner">Planner</Link><Link href="/tracker">Tracker</Link><Link href="/checklist">Checklist</Link><Link href="/ask">Ask</Link><Link href="/rules">Rules</Link><Link href="/about">About</Link><Link href="/disclaimer">Disclaimer</Link></span>
-      </footer>
+      <section className="v2-wrap v2-cover" aria-labelledby="cover-title">
+        <h2 id="cover-title">Where it works today.</h2>
+        <div className="v2-cover-grid">
+          <div>
+            <h3>Full rules and checklists</h3>
+            <p>Mecklenburg, Cabarrus and Catawba counties.</p>
+          </div>
+          <div>
+            <h3>Office contacts and sourced facts</h3>
+            <p>{DIRECTORY_COUNTIES.join(", ")}.</p>
+          </div>
+          <div>
+            <h3>Next</h3>
+            <p>More North Carolina counties. Tell us where you pull permits and we&apos;ll add it sooner.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="v2-cta" aria-labelledby="cta-title">
+        <div className="v2-wrap v2-cta-in">
+          <h2 id="cta-title">Be one of the first contractors to shape it.</h2>
+          <p>Tell us about your last permit: what slowed it down and what you wish you had known. We&apos;ll build the next feature around it.</p>
+          <div className="v2-actions">
+            <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="v2-btn v2-btn-ink">Tell us about your last permit</a>
+            <Link href="/planner" className="v2-btn v2-btn-line-ink">Plan a project</Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="v2-foot">
+        <div className="v2-wrap v2-foot-in">
+          <span>Permivo. Early prototype. Not legal advice.</span>
+          <nav aria-label="Footer">
+            <Link href="/planner">Planner</Link>
+            <Link href="/checklist">Checklist</Link>
+            <Link href="/review">Review</Link>
+            <Link href="/ask">Ask</Link>
+            <Link href="/tracker">Tracker</Link>
+            <Link href="/rules">Rules</Link>
+            <Link href="/about">About</Link>
+            <Link href="/disclaimer">Disclaimer</Link>
+          </nav>
+        </div>
+      </div>
     </main>
   );
 }

@@ -177,27 +177,21 @@ export default function ReviewPage() {
                 );
               })}
               <button type="button" onClick={addTradesToDraft} className="rounded-md border border-orange-800 bg-white px-3 py-2 text-sm text-orange-800">
-                Add to my draft
+                Add trades to my draft
               </button>
             </div>
             {tradeMsg && <p className="mt-2 text-sm text-gray-600" aria-live="polite">{tradeMsg}</p>}
           </section>
 
-          {project === "trade" ? (
-            <p className="mt-4 text-sm text-gray-600">
-              Sketching is for decks, additions and garages. For trade-only work, describe the equipment and circuits below.
-            </p>
-          ) : (
-            <SketchTool
-              kind={project as SketchKind}
-              county={place}
-              location={location}
-              onAddToDraft={(sentence) => {
-                setDraft((d) => (d.trim() ? `${d.trim()}\n\n${sentence}` : sentence).slice(0, 4000));
-                setTimeout(() => document.getElementById("rv-draft")?.focus(), 0);
-              }}
-            />
-          )}
+          <SketchTool
+            kind={project as SketchKind}
+            county={place}
+            location={location}
+            onAddToDraft={(sentence) => {
+              setDraft((d) => (d.trim() ? `${d.trim()}\n\n${sentence}` : sentence).slice(0, 4000));
+              setTimeout(() => document.getElementById("rv-draft")?.focus(), 0);
+            }}
+          />
 
           <form
             className="mt-6"

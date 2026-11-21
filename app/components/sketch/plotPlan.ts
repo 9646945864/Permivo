@@ -1,4 +1,4 @@
-import { KIND_NAMES, measure, type Sketch, type SketchKind } from "./model";
+import { HVAC_UNIT, KIND_NAMES, changesFootprint, hasShape, hvacClearance, measure, tradesIn, type Sketch, type SketchKind } from "./model";
 
 // Opens a print-ready plot plan at a true architectural scale on a letter-size landscape page.
 // The browser's print dialog saves it as a PDF.
@@ -22,8 +22,25 @@ export function printPlotPlan(s: Sketch, kind: SketchKind, county: string): bool
   const m = measure(s);
   const p = s.proj;
   const h = s.house;
-  const name = KIND_NAMES[kind];
-  const label = `Proposed ${name}`;
+  const shape = hasShape(kind);
+  const footprint = changesFootprint(kind, s);
+  const name =
+    kind === "addition" && s.addType === "up" ? "second-story addition" : kind === "addition" && s.addType === "inside" ? "conversion of existing space" : KIND_NAMES[kind];
+  const label = kind === "trade" ? "Trade work (equipment location)" : `Proposed ${name}`;
+  const shortName = kind === "deck" ? "DECK" : kind === "garage" ? "GARAGE" : s.addType === "up" ? "2ND STORY" : s.addType === "inside" ? "CONVERTED" : "ADD.";
+  // Outdoor HVAC units with a dimension line to the nearest property line
+  const half = HVAC_UNIT / 2;
+  const units = s.equip
+    .filter((e) => e.type === "hvacOut")
+    .map((e) => {
+      const opts = [
+        { d: e.x - half, lx1: e.x - half, ly1: e.y, lx2: 0, ly2: e.y },
+        { d: s.lotW - e.x - half, lx1: e.x + half, ly1: e.y, lx2: s.lotW, ly2: e.y },
+        { d: e.y - half, lx1: e.x, ly1: e.y - half, lx2: e.x, ly2: 0 },
+        { d: s.lotD - e.y - half, lx1: e.x, ly1: e.y + half, lx2: e.x, ly2: s.lotD },
+      ].sort((a, b) => a.d - b.d)[0];
+      return { x: e.x, y: e.y, c: hvacClearance(s, e), ...opts };
+    });
   const wIn = s.lotW * scale.inPerFt;
   const dIn = s.lotD * scale.inPerFt;
   const fs = 1 / scale.inPerFt / 9; // text size in feet so it prints about 1/9 in tall
@@ -37,32 +54,37 @@ export function printPlotPlan(s: Sketch, kind: SketchKind, county: string): bool
   <text x="${-fs * 0.8}" y="${s.lotD / 2}" text-anchor="middle" transform="rotate(-90 ${-fs * 0.8} ${s.lotD / 2})">Side line, ${s.lotD} ft</text>
   <rect x="${h.x}" y="${h.y}" width="${h.w}" height="${h.d}" fill="#eee" stroke="#000" stroke-width="${fs / 8}"/>
   <text x="${h.x + h.w / 2}" y="${h.y + h.d / 2}" text-anchor="middle" dominant-baseline="middle">Existing house</text>
-  <rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}" fill="#f6d2c3" stroke="#000" stroke-width="${fs / 5}"/>
-  <text x="${p.x + p.w / 2}" y="${p.y + p.d / 2}" text-anchor="middle" dominant-baseline="middle">${kind === "addition" ? "ADD." : kind === "garage" ? "GARAGE" : "DECK"}</text>
-  <text x="${p.x + p.w / 2}" y="${p.y - fs * 0.4}" text-anchor="middle">Proposed ${p.w}' x ${p.d}'</text>
-  ${dim(p.x + p.w * 0.2, 0, p.x + p.w * 0.2, p.y, `${m.rear}'`, fs)}
+  ${shape ? `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}" fill="#f6d2c3" stroke="#000" stroke-width="${fs / 5}"${footprint ? "" : ` stroke-dasharray="${fs / 2} ${fs / 3}" fill-opacity="0.7"`}/>
+  <text x="${p.x + p.w / 2}" y="${p.y + p.d / 2}" text-anchor="middle" dominant-baseline="middle">${shortName}</text>
+  <text x="${p.x + p.w / 2}" y="${p.y - fs * 0.4}" text-anchor="middle">Proposed ${p.w}' x ${p.d}'</text>` : ""}
+  ${footprint ? `${dim(p.x + p.w * 0.2, 0, p.x + p.w * 0.2, p.y, `${m.rear}'`, fs)}
   ${dim(p.x + p.w * 0.2, p.y + p.d, p.x + p.w * 0.2, s.lotD, `${m.front}'`, fs)}
   ${dim(0, p.y + p.d * 0.8, p.x, p.y + p.d * 0.8, `${m.left}'`, fs)}
-  ${dim(p.x + p.w, p.y + p.d * 0.8, s.lotW, p.y + p.d * 0.8, `${m.right}'`, fs)}
+  ${dim(p.x + p.w, p.y + p.d * 0.8, s.lotW, p.y + p.d * 0.8, `${m.right}'`, fs)}` : ""}
+  ${units.map((u) => `<rect x="${u.x - HVAC_UNIT / 2}" y="${u.y - HVAC_UNIT / 2}" width="${HVAC_UNIT}" height="${HVAC_UNIT}" fill="#fff" stroke="#000" stroke-width="${fs / 8}"/>
+  <text x="${u.x}" y="${u.y + HVAC_UNIT / 2 + fs}" text-anchor="middle">HVAC unit</text>
+  ${dim(u.lx1, u.ly1, u.lx2, u.ly2, `${u.c}'`, fs)}`).join("\n")}
   <g transform="translate(0 ${s.lotD + fs * 3})">
     <rect x="0" y="0" width="${barFt / 2}" height="${fs / 2}" fill="#000"/><rect x="${barFt / 2}" y="0" width="${barFt / 2}" height="${fs / 2}" fill="none" stroke="#000" stroke-width="${fs / 10}"/>
     <text x="0" y="${fs * 1.6}">0</text><text x="${barFt}" y="${fs * 1.6}" text-anchor="middle">${barFt} ft</text>
   </g>
 </svg>`;
 
-  const rows: [string, string][] = [
-    ["Project", label],
-    ["Size", `${p.w} ft x ${p.d} ft (${m.area} sq ft)`],
-    [kind === "deck" ? "Deck height" : "Wall height", `About ${s.height} ft`],
-    ["Lot", `${s.lotW} ft x ${s.lotD} ft`],
-    ["Existing house", `${h.w} ft x ${h.d} ft, walls about ${s.houseHeight} ft`],
-    ["To rear line", `${m.rear} ft`],
-    ["To front line", `${m.front} ft`],
-    ["To side lines", `${m.left} ft (left), ${m.right} ft (right)`],
-    ["County", county],
-    ["Scale", scale.label],
-    ["Date", new Date().toLocaleDateString()],
-  ];
+  const rows: [string, string][] = [["Project", label]];
+  if (shape) {
+    rows.push(["Size", `${p.w} ft x ${p.d} ft (${m.area} sq ft)`]);
+    if (!(kind === "addition" && s.addType === "inside")) rows.push([kind === "deck" ? "Deck height" : "Wall height", `About ${s.height} ft`]);
+  }
+  rows.push(["Lot", `${s.lotW} ft x ${s.lotD} ft`], ["Existing house", `${h.w} ft x ${h.d} ft, walls about ${s.houseHeight} ft`]);
+  if (footprint) {
+    rows.push(["To rear line", `${m.rear} ft`], ["To front line", `${m.front} ft`], ["To side lines", `${m.left} ft (left), ${m.right} ft (right)`]);
+  } else if (shape) {
+    rows.push(["Footprint", "Unchanged"]);
+  }
+  const trades = tradesIn(s);
+  if (trades.length) rows.push(["Trade work", trades.map((t) => (t === "hvac" ? "HVAC" : t.charAt(0).toUpperCase() + t.slice(1))).join(", ")]);
+  units.forEach((u, i) => rows.push([units.length > 1 ? `HVAC unit ${i + 1}` : "HVAC unit", `${u.c} ft to nearest property line`]));
+  rows.push(["County", county], ["Scale", scale.label], ["Date", new Date().toLocaleDateString()]);
 
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>Plot plan - ${esc(label)}</title>
 <style>

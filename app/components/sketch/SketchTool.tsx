@@ -3,12 +3,34 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Sketch2D from "./Sketch2D";
-import { HOUSE_HEIGHT, LIMITS, clampSketch, defaultSketch, draftSentence, heightRange, measure, notesFor, storiesFor, type Sketch, type SketchKind } from "./model";
+import {
+  ADD_NAMES,
+  EQUIP,
+  EQUIP_GROUPS,
+  HOUSE_HEIGHT,
+  LIMITS,
+  MAX_EQUIP,
+  addEquip,
+  changesFootprint,
+  clampSketch,
+  defaultSketch,
+  draftSentence,
+  hasShape,
+  heightRange,
+  hvacClearance,
+  measure,
+  notesFor,
+  projFor,
+  storiesFor,
+  type AddType,
+  type Sketch,
+  type SketchKind,
+} from "./model";
 import { printPlotPlan } from "./plotPlan";
 import { track } from "../analytics";
 
 // "Sketch your project" on the Review page: a 2D plan to scale, a 3D view of the same sketch,
-// measurements, rule notes, a printable plot plan, and a sentence for the application draft.
+// measurements, rule notes, trade equipment, a printable plot plan, and a sentence for the draft.
 // Nothing is stored or sent anywhere unless the contractor adds the sentence to the draft.
 
 const Sketch3D = dynamic(() => import("./Sketch3D"), {
@@ -20,6 +42,12 @@ const NOTE_STYLE = {
   info: "border-orange-100 bg-orange-50 text-gray-800",
   warn: "border-yellow-300 bg-yellow-100 text-yellow-900",
   ok: "border-green-300 bg-green-100 text-green-900",
+};
+
+const ADD_HINTS: Record<AddType, string> = {
+  out: "A new room that extends the footprint, like a rear bump-out.",
+  up: "A new story on top of the house. Draw the area inside the house outline.",
+  inside: "Turn existing space (garage, porch, attic, basement) into living space. Draw it inside the house outline.",
 };
 
 function NumberField({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
@@ -62,12 +90,13 @@ export default function SketchTool({
   const [view, setView] = useState<"plan" | "3d">("plan");
   const [msg, setMsg] = useState("");
   const [help, setHelp] = useState(false);
+  const [xrayPref, setXrayPref] = useState<boolean | null>(null); // null = automatic
 
-  // A new project type starts from a sensible layout for that type, keeping the lot and house.
+  // A new project type starts from a sensible layout for that type, keeping the lot, house and equipment.
   useEffect(() => {
     setSketch((cur) => {
       const d = defaultSketch(kind);
-      return clampSketch({ ...d, lotW: cur.lotW, lotD: cur.lotD, house: cur.house, houseHeight: cur.houseHeight }, kind);
+      return clampSketch({ ...d, lotW: cur.lotW, lotD: cur.lotD, house: cur.house, houseHeight: cur.houseHeight, equip: cur.equip }, kind);
     });
     setMsg("");
   }, [kind]);
@@ -76,15 +105,25 @@ export default function SketchTool({
     setSketch(clampSketch(s, kind));
     setMsg("");
   };
+  function setAddType(t: AddType) {
+    const hr = heightRange(kind, t);
+    update({ ...sketch, addType: t, proj: projFor(t, sketch.house), height: t === "up" ? 9 : Math.max(hr.min, sketch.height) });
+  }
+
+  const shape = hasShape(kind);
+  const footprint = changesFootprint(kind, sketch);
   const m = measure(sketch);
-  const hr = heightRange(kind);
+  const hr = heightRange(kind, sketch.addType);
   const notes = notesFor(sketch, kind, county, location);
+  const xrayAuto = (kind === "addition" && sketch.addType === "inside") || sketch.equip.length > 0;
+  const xray = xrayPref ?? xrayAuto;
+  const title = kind === "trade" ? "Sketch the trade work" : "Sketch your project";
 
   return (
     <section className="sk-panel mt-6" aria-labelledby="sk-title">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 id="sk-title" className="text-lg font-medium text-gray-900">Sketch your project</h2>
+          <h2 id="sk-title" className="text-lg font-medium text-gray-900">{title}</h2>
           <button
             type="button"
             className="sk-info"
@@ -111,7 +150,9 @@ export default function SketchTool({
         </div>
       </div>
       <p className="mt-1 text-sm text-gray-600">
-        Draw it to scale on your lot. Permivo measures it, checks it against the rules it has, and can add the numbers to your draft.
+        {kind === "trade"
+          ? "Place the equipment on your lot and in the house. Permivo shows it in the plan and in 3D, notes the rules it has, and can add it to your draft."
+          : "Draw it to scale on your lot and place any trade equipment. Permivo measures it, checks it against the rules it has, and can add it to your draft."}
       </p>
 
       {help && (
@@ -132,28 +173,34 @@ export default function SketchTool({
             <div>
               <h4>2. Plan view (2D)</h4>
               <ul>
-                <li><b>Draw:</b> press on empty ground and drag to draw your project.</li>
-                <li><b>Move:</b> drag the project or the house to a new spot.</li>
-                <li><b>Exact sizes:</b> type them in the project width and depth boxes.</li>
-                <li><b>Keyboard:</b> click a shape, then use the arrow keys to move it 1 ft (hold Shift for 5 ft).</li>
+                <li><b>Draw:</b> press on empty ground and drag. For <b>Build up</b> or <b>Convert inside</b>, drag inside the house.</li>
+                <li><b>Move:</b> drag the project, the house or any equipment icon.</li>
+                <li><b>Exact sizes:</b> type them in the width and depth boxes.</li>
+                <li><b>Keyboard:</b> click a shape or icon, then use the arrow keys (Shift for 5 ft). Delete removes an icon.</li>
                 <li>One grid square is 5 ft. Everything snaps to whole feet.</li>
               </ul>
             </div>
             <div>
-              <h4>3. 3D view</h4>
+              <h4>3. Additions and trades</h4>
               <ul>
-                <li><b>Turn:</b> drag with the mouse or one finger.</li>
-                <li><b>Zoom:</b> scroll the mouse wheel or pinch with two fingers.</li>
-                <li>Use the height sliders to raise the deck, or set wall heights for the addition, garage and house.</li>
+                <li><b>Build out</b> extends the footprint. <b>Build up</b> adds a story. <b>Convert inside</b> turns existing space into living space.</li>
+                <li>Add <b>electrical</b>, <b>plumbing</b> or <b>HVAC</b> equipment with the buttons, then drag each icon to its spot.</li>
+                <li>Lines show the runs: circuits to the panel, fixtures to the water heater, the air handler to the outdoor unit.</li>
+              </ul>
+            </div>
+            <div>
+              <h4>4. 3D view</h4>
+              <ul>
+                <li><b>Turn:</b> drag with the mouse or one finger. <b>Zoom:</b> scroll or pinch.</li>
+                <li><b>X-ray</b> makes the house see-through so inside work and equipment show. It turns on by itself when needed.</li>
                 <li>New work is shaded orange. The existing house is beige.</li>
               </ul>
             </div>
             <div>
-              <h4>4. Use the result</h4>
+              <h4>5. Use the result</h4>
               <ul>
-                <li><b>Add to my draft</b> writes the size and distances into your application below.</li>
+                <li><b>Add to my draft</b> writes the sizes, distances and equipment into your application below.</li>
                 <li><b>Print plot plan</b> opens a to-scale drawing. Save it as a PDF and print at 100%.</li>
-                <li>Check the notes for rules that apply to your county.</li>
                 <li>It is not a survey. Confirm property lines and setbacks before you submit.</li>
               </ul>
             </div>
@@ -161,18 +208,44 @@ export default function SketchTool({
         </div>
       )}
 
+      {kind === "addition" && (
+        <div className="mt-3">
+          <p className="text-sm font-medium text-gray-700">What kind of addition?</p>
+          <div className="mt-1 flex flex-wrap gap-2" role="group" aria-label="Addition type">
+            {(["out", "up", "inside"] as AddType[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={sketch.addType === t}
+                onClick={() => setAddType(t)}
+                className={`rounded-md border px-3 py-2 text-sm ${sketch.addType === t ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"}`}
+              >
+                {ADD_NAMES[t]}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-gray-500">{ADD_HINTS[sketch.addType]}</p>
+        </div>
+      )}
+
       <div className="sk-fields">
         <NumberField label="Lot width" value={sketch.lotW} min={LIMITS.lotMin} max={LIMITS.lotMax} onChange={(v) => update({ ...sketch, lotW: v })} />
         <NumberField label="Lot depth" value={sketch.lotD} min={LIMITS.lotMin} max={LIMITS.lotMax} onChange={(v) => update({ ...sketch, lotD: v })} />
-        <NumberField label="Project width" value={sketch.proj.w} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, proj: { ...sketch.proj, w: v } })} />
-        <NumberField label="Project depth" value={sketch.proj.d} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, proj: { ...sketch.proj, d: v } })} />
+        {shape && (
+          <>
+            <NumberField label={kind === "addition" && sketch.addType !== "out" ? "Area width" : "Project width"} value={sketch.proj.w} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, proj: { ...sketch.proj, w: v } })} />
+            <NumberField label={kind === "addition" && sketch.addType !== "out" ? "Area depth" : "Project depth"} value={sketch.proj.d} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, proj: { ...sketch.proj, d: v } })} />
+          </>
+        )}
         <NumberField label="House width" value={sketch.house.w} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, house: { ...sketch.house, w: v } })} />
         <NumberField label="House depth" value={sketch.house.d} min={1} max={LIMITS.sizeMax} onChange={(v) => update({ ...sketch, house: { ...sketch.house, d: v } })} />
-        <label className="sk-field sk-range">
-          <span>{hr.label}</span>
-          <input type="range" min={hr.min} max={hr.max} step={1} value={sketch.height} onChange={(e) => update({ ...sketch, height: Number(e.target.value) })} />
-          <span>{sketch.height} ft</span>
-        </label>
+        {shape && !(kind === "addition" && sketch.addType === "inside") && (
+          <label className="sk-field sk-range">
+            <span>{hr.label}</span>
+            <input type="range" min={hr.min} max={hr.max} step={1} value={sketch.height} onChange={(e) => update({ ...sketch, height: Number(e.target.value) })} />
+            <span>{sketch.height} ft</span>
+          </label>
+        )}
         <label className="sk-field sk-range">
           <span>House wall height</span>
           <input
@@ -189,21 +262,79 @@ export default function SketchTool({
         </label>
       </div>
 
+      <div className="sk-equip-bar" aria-label="Trade equipment">
+        <p className="text-sm font-medium text-gray-700">{kind === "trade" ? "Place equipment" : "Trade work (optional)"}</p>
+        <div className="sk-equip-groups">
+          {EQUIP_GROUPS.map((g) => (
+            <div key={g.trade} className="sk-equip-group">
+              <span>{g.label}</span>
+              {g.types.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  disabled={sketch.equip.length >= MAX_EQUIP}
+                  onClick={() => update(addEquip(sketch, t))}
+                  style={{ borderColor: EQUIP[t].color, color: EQUIP[t].color }}
+                >
+                  + {EQUIP[t].label}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+        {sketch.equip.length > 0 && (
+          <ul className="sk-equip-list">
+            {sketch.equip.map((e) => (
+              <li key={e.id}>
+                <span className="sk-equip-tag" style={{ borderColor: EQUIP[e.type].color, color: EQUIP[e.type].color }}>{EQUIP[e.type].short}</span>
+                {EQUIP[e.type].label}
+                {EQUIP[e.type].outdoor && <span className="text-gray-500"> · {hvacClearance(sketch, e)} ft to nearest line</span>}
+                <button type="button" aria-label={`Remove ${EQUIP[e.type].label}`} onClick={() => update({ ...sketch, equip: sketch.equip.filter((x) => x.id !== e.id) })}>
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="mt-3">
-        {view === "plan" ? <Sketch2D sketch={sketch} kind={kind} onChange={update} /> : <Sketch3D sketch={sketch} kind={kind} />}
+        {view === "3d" && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <button type="button" aria-pressed={xray} onClick={() => setXrayPref(!xray)} className={`sk-xray${xray ? " on" : ""}`}>
+              X-ray walls {xray ? "on" : "off"}
+            </button>
+            {xrayPref !== null && (
+              <button type="button" className="text-xs text-orange-800 underline" onClick={() => setXrayPref(null)}>
+                Back to automatic
+              </button>
+            )}
+          </div>
+        )}
+        {view === "plan" ? <Sketch2D sketch={sketch} kind={kind} onChange={update} /> : <Sketch3D sketch={sketch} kind={kind} xray={xray} />}
         <p className="mt-1 text-xs text-gray-500">
           {view === "plan"
-            ? "Drag on the lot to draw the project. Drag a shape, or select it and use the arrow keys, to move it. One square = 5 ft. The street is at the bottom."
+            ? kind === "addition" && sketch.addType !== "out"
+              ? "Drag inside the house to draw the area. Drag shapes and icons to move them. One square = 5 ft. The street is at the bottom."
+              : "Drag on the lot to draw. Drag shapes and icons to move them, or select one and use the arrow keys. One square = 5 ft. The street is at the bottom."
             : "Drag to turn the view. Scroll or pinch to zoom. New work is shaded orange. A simple model, not an architectural drawing."}
         </p>
       </div>
 
-      <div className="sk-metrics">
-        <div><span>Size</span><b>{sketch.proj.w} × {sketch.proj.d} ft</b></div>
-        <div><span>Area</span><b>{m.area.toLocaleString()} sq ft</b></div>
-        <div><span>To rear / front</span><b>{m.rear} / {m.front} ft</b></div>
-        <div><span>To left / right</span><b>{m.left} / {m.right} ft</b></div>
-      </div>
+      {shape && (
+        <div className="sk-metrics">
+          <div><span>Size</span><b>{sketch.proj.w} × {sketch.proj.d} ft</b></div>
+          <div><span>Area</span><b>{m.area.toLocaleString()} sq ft</b></div>
+          {footprint ? (
+            <>
+              <div><span>To rear / front</span><b>{m.rear} / {m.front} ft</b></div>
+              <div><span>To left / right</span><b>{m.left} / {m.right} ft</b></div>
+            </>
+          ) : (
+            <div><span>Footprint</span><b>Unchanged</b></div>
+          )}
+        </div>
+      )}
 
       <ul className="mt-3 space-y-2">
         {notes.map((n, i) => (
@@ -215,6 +346,10 @@ export default function SketchTool({
         <button
           type="button"
           onClick={() => {
+            if (!shape && sketch.equip.length === 0) {
+              setMsg("Place at least one piece of equipment first.");
+              return;
+            }
             onAddToDraft(draftSentence(sketch, kind));
             setMsg("Added to your draft below.");
             track("sketch_added_to_draft", { kind });

@@ -55,6 +55,7 @@ export function printPlotPlan(s: Sketch, kind: SketchKind, county: string): bool
     ["Size", `${p.w} ft x ${p.d} ft (${m.area} sq ft)`],
     [kind === "deck" ? "Deck height" : "Wall height", `About ${s.height} ft`],
     ["Lot", `${s.lotW} ft x ${s.lotD} ft`],
+    ["Existing house", `${h.w} ft x ${h.d} ft, walls about ${s.houseHeight} ft`],
     ["To rear line", `${m.rear} ft`],
     ["To front line", `${m.front} ft`],
     ["To side lines", `${m.left} ft (left), ${m.right} ft (right)`],

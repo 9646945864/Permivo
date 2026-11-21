@@ -9,7 +9,11 @@ export type Sketch = {
   house: Rect;
   proj: Rect;
   height: number; // deck: floor height off the ground; addition/garage: wall height
+  houseHeight: number; // existing house wall height (about 9 ft per story)
 };
+
+export const HOUSE_HEIGHT = { min: 8, max: 30 };
+export const storiesFor = (wall: number) => Math.max(1, Math.round(wall / 9.5));
 
 export const KIND_NAMES: Record<SketchKind, string> = {
   deck: "deck",
@@ -27,9 +31,10 @@ export function defaultSketch(kind: SketchKind): Sketch {
   const lotW = 70;
   const lotD = 120;
   const house: Rect = { x: 15, y: 55, w: 40, d: 35 }; // 30 ft from the street
-  if (kind === "garage") return { lotW, lotD, house, proj: { x: 42, y: 8, w: 20, d: 24 }, height: 9 };
-  if (kind === "addition") return { lotW, lotD, house, proj: { x: 15, y: 41, w: 14, d: 14 }, height: 10 };
-  return { lotW, lotD, house, proj: { x: 29, y: 39, w: 12, d: 16 }, height: 4 };
+  const houseHeight = 10;
+  if (kind === "garage") return { lotW, lotD, house, houseHeight, proj: { x: 42, y: 8, w: 20, d: 24 }, height: 9 };
+  if (kind === "addition") return { lotW, lotD, house, houseHeight, proj: { x: 15, y: 41, w: 14, d: 14 }, height: 10 };
+  return { lotW, lotD, house, houseHeight, proj: { x: 29, y: 39, w: 12, d: 16 }, height: 4 };
 }
 
 const clampN = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(v)));
@@ -51,6 +56,7 @@ export function clampSketch(s: Sketch, kind: SketchKind): Sketch {
     house: clampRect(s.house, lotW, lotD),
     proj: clampRect(s.proj, lotW, lotD),
     height: clampN(s.height, hr.min, hr.max),
+    houseHeight: clampN(s.houseHeight, HOUSE_HEIGHT.min, HOUSE_HEIGHT.max),
   };
 }
 

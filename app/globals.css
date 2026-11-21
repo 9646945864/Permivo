@@ -372,3 +372,34 @@ footer > span:last-child { display: flex; gap: 16px; }
 @media (prefers-reduced-motion: reduce) { .ask-drawer { animation: none; } }
 @media print { .ask-launcher, .ask-overlay { display: none !important; } }
 .ask-launcher[hidden] { display: none; }
+
+/* ============ 16. Review: sketch your project ============ */
+.sk-panel { border: 1px solid #fed7aa; border-radius: 0.5rem; background: #fff; padding: 1rem; }
+.sk-tabs { display: inline-flex; border: 1px solid #fdba74; border-radius: 0.375rem; overflow: hidden; }
+.sk-tabs button { padding: 0.35rem 0.9rem; font-size: 0.875rem; background: #fff; color: #7c2d12; border: 0; cursor: pointer; }
+.sk-tabs button[aria-pressed="true"] { background: #9a3412; color: #fff; }
+.sk-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
+.sk-field { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; color: #4b5563; }
+.sk-field span:first-child { flex: 1; }
+.sk-field input[type="number"] { width: 4.5rem; padding: 0.3rem 0.4rem; border: 1px solid #fed7aa; border-radius: 0.375rem; font-size: 0.875rem; color: #111827; background: #fff; }
+.sk-range { grid-column: 1 / -1; }
+.sk-range input[type="range"] { flex: 2; accent-color: #9a3412; }
+.sk-plan { display: block; width: 100%; height: auto; background: #fffaf5; border: 1px solid #fed7aa; border-radius: 0.5rem; touch-action: none; cursor: crosshair; user-select: none; }
+.sk-grid { stroke: #f3e2d3; stroke-width: 0.6; }
+.sk-lot { fill: none; stroke: #3f3a36; stroke-width: 1.6; stroke-dasharray: 7 5; }
+.sk-label { font-size: 12px; fill: #6b6158; }
+.sk-size { font-size: 12px; fill: #7c2d12; font-weight: 500; }
+.sk-house rect { fill: #e8e4da; stroke: #8b857b; stroke-width: 1.2; }
+.sk-house text { font-size: 13px; fill: #4b453f; }
+.sk-proj rect { fill: #f6d2c3; stroke: #c2410c; stroke-width: 2; }
+.sk-proj text { font-size: 13px; fill: #7c2d12; font-weight: 500; }
+.sk-house, .sk-proj { cursor: move; outline: none; }
+.sk-house:focus-visible rect, .sk-proj:focus-visible rect { stroke: #1d4ed8; stroke-width: 3; }
+.sk-dim line { stroke: #c2410c; stroke-width: 1; stroke-dasharray: 4 3; }
+.sk-dim text { font-size: 12px; fill: #7c2d12; }
+.sk-3d { width: 100%; height: 380px; border: 1px solid #fed7aa; border-radius: 0.5rem; background: #eef4fb; overflow: hidden; touch-action: none; cursor: grab; }
+.sk-3d-loading { display: flex; align-items: center; justify-content: center; font-size: 0.875rem; color: #6b6158; }
+.sk-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
+.sk-metrics div { background: #fff7ed; border-radius: 0.375rem; padding: 0.5rem 0.75rem; }
+.sk-metrics span { display: block; font-size: 0.75rem; color: #6b6158; }
+.sk-metrics b { font-size: 1rem; font-weight: 600; color: #211b18; }

@@ -8,6 +8,8 @@ import { NotCovered, PartialNote, PlaceSelector, isCovered, usePlace } from "../
 import { STATUS_LABELS, type Status } from "../../data/rules";
 import type { ReviewResult, ReviewState } from "../../data/reviewContext";
 import { FEEDBACK_URL } from "../../data/site";
+import SketchTool from "../components/sketch/SketchTool";
+import type { SketchKind } from "../components/sketch/model";
 
 const STATE_STYLE: Record<ReviewState, { label: string; style: string }> = {
   missing: { label: "Missing", style: "bg-red-50 text-red-900 border-red-300" },
@@ -127,6 +129,16 @@ export default function ReviewPage() {
               ))}
             </div>
           </section>
+
+          <SketchTool
+            kind={project as SketchKind}
+            county={place}
+            location={location}
+            onAddToDraft={(sentence) => {
+              setDraft((d) => (d.trim() ? `${d.trim()}\n\n${sentence}` : sentence).slice(0, 4000));
+              setTimeout(() => document.getElementById("rv-draft")?.focus(), 0);
+            }}
+          />
 
           <form
             className="mt-6"

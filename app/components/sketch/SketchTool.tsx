@@ -15,6 +15,7 @@ import {
   clampSketch,
   defaultSketch,
   draftSentence,
+  followPlacement,
   hasShape,
   heightRange,
   hvacClearance,
@@ -102,8 +103,18 @@ export default function SketchTool({
   }, [kind]);
 
   const update = (s: Sketch) => {
-    setSketch(clampSketch(s, kind));
-    setMsg("");
+    // Only a pure move of the project (same size, new spot) can change the addition type.
+    const moved =
+      s.proj.w === sketch.proj.w && s.proj.d === sketch.proj.d && (s.proj.x !== sketch.proj.x || s.proj.y !== sketch.proj.y) && s.house === sketch.house;
+    const { sketch: placed, switched } = moved ? followPlacement(s, kind) : { sketch: s, switched: null };
+    setSketch(clampSketch(placed, kind));
+    setMsg(
+      switched === "inside"
+        ? "Moved inside the house, so this is now a conversion of existing space. Pick Build up instead if it is a new story."
+        : switched === "out"
+          ? "Moved outside the house, so this is now a Build out addition."
+          : ""
+    );
   };
   function setAddType(t: AddType) {
     const hr = heightRange(kind, t);
@@ -174,8 +185,10 @@ export default function SketchTool({
               <h4>2. Plan view (2D)</h4>
               <ul>
                 <li><b>Draw:</b> press on empty ground and drag. For <b>Build up</b> or <b>Convert inside</b>, drag inside the house.</li>
-                <li><b>Move:</b> drag the project, the house or any equipment icon.</li>
+                <li><b>Move:</b> drag the project, the house or any equipment icon anywhere on the lot.</li>
+                <li><b>Resize:</b> drag the small squares on the corners and edges. The size updates as you drag.</li>
                 <li><b>Exact sizes:</b> type them in the width and depth boxes.</li>
+                <li>Drag a room addition fully into the house and it becomes a conversion; drag it out and it becomes a build-out.</li>
                 <li><b>Keyboard:</b> click a shape or icon, then use the arrow keys (Shift for 5 ft). Delete removes an icon.</li>
                 <li>One grid square is 5 ft. Everything snaps to whole feet.</li>
               </ul>
@@ -315,8 +328,8 @@ export default function SketchTool({
         <p className="mt-1 text-xs text-gray-500">
           {view === "plan"
             ? kind === "addition" && sketch.addType !== "out"
-              ? "Drag inside the house to draw the area. Drag shapes and icons to move them. One square = 5 ft. The street is at the bottom."
-              : "Drag on the lot to draw. Drag shapes and icons to move them, or select one and use the arrow keys. One square = 5 ft. The street is at the bottom."
+              ? "Drag inside the house to draw the area. Drag shapes to move them, or the small squares to resize. One square = 5 ft. The street is at the bottom."
+              : "Drag on the lot to draw. Drag shapes and icons to move them, or the small squares to resize. One square = 5 ft. The street is at the bottom."
             : "Drag to turn the view. Scroll or pinch to zoom. New work is shaded orange. A simple model, not an architectural drawing."}
         </p>
       </div>

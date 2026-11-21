@@ -11,10 +11,39 @@ import { EQUIP, HVAC_UNIT, changesFootprint, hasShape, hvacClearance, type Equip
 const VIEW_W = 640;
 const PAD = 36;
 
+type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 type Drag =
   | { mode: "draw"; sx: number; sy: number }
   | { mode: "move"; target: "proj" | "house"; ox: number; oy: number; start: Rect }
+  | { mode: "resize"; target: "proj" | "house"; handle: Handle; start: Rect }
   | { mode: "equip"; id: string; ox: number; oy: number };
+
+const HANDLES: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+const CURSOR: Record<Handle, string> = { n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", ne: "nesw-resize", sw: "nesw-resize", nw: "nwse-resize", se: "nwse-resize" };
+
+function handlePoint(r: Rect, h: Handle) {
+  const x = h.includes("w") ? r.x : h.includes("e") ? r.x + r.w : r.x + r.w / 2;
+  const y = h.includes("n") ? r.y : h.includes("s") ? r.y + r.d : r.y + r.d / 2;
+  return { x, y };
+}
+
+/** New rectangle when a handle is dragged to (qx, qy). Snaps to whole feet, never smaller than 1 ft. */
+function resizeRect(r: Rect, h: Handle, qx: number, qy: number): Rect {
+  let { x, y, w, d } = r;
+  const right = r.x + r.w;
+  const bottom = r.y + r.d;
+  if (h.includes("w")) {
+    x = Math.min(Math.round(qx), right - 1);
+    w = right - x;
+  }
+  if (h.includes("e")) w = Math.max(1, Math.round(qx) - r.x);
+  if (h.includes("n")) {
+    y = Math.min(Math.round(qy), bottom - 1);
+    d = bottom - y;
+  }
+  if (h.includes("s")) d = Math.max(1, Math.round(qy) - r.y);
+  return { x, y, w, d };
+}
 
 function projLabel(kind: SketchKind, s: Sketch) {
   if (kind === "deck") return "Deck";
@@ -70,11 +99,29 @@ export default function Sketch2D({
     });
   }
 
+  // Resize handles: the project's eight, then the house's four corners.
+  const handleHitFt = Math.max(1, 9 / sc);
+  function hitHandle(q: { x: number; y: number }): { target: "proj" | "house"; handle: Handle } | null {
+    const targets: { target: "proj" | "house"; r: Rect; hs: Handle[] }[] = [];
+    if (shape) targets.push({ target: "proj", r: proj, hs: HANDLES });
+    targets.push({ target: "house", r: house, hs: ["nw", "ne", "se", "sw"] });
+    for (const t of targets) {
+      for (const h of t.hs) {
+        const p = handlePoint(t.r, h);
+        if (Math.abs(q.x - p.x) <= handleHitFt && Math.abs(q.y - p.y) <= handleHitFt) return { target: t.target, handle: h };
+      }
+    }
+    return null;
+  }
+
   function onDown(e: React.PointerEvent) {
     const q = toFeet(e);
     const eq = hitEquip(q);
+    const hh = eq ? null : hitHandle(q);
     if (eq) setDrag({ mode: "equip", id: eq.id, ox: q.x - eq.x, oy: q.y - eq.y });
+    else if (hh) setDrag({ mode: "resize", target: hh.target, handle: hh.handle, start: sketch[hh.target] });
     else if (shape && inside(proj, q)) setDrag({ mode: "move", target: "proj", ox: q.x - proj.x, oy: q.y - proj.y, start: proj });
+    // A new story or conversion is moved freely too, so it can be dragged out of the house.
     else if (inHouse && inside(house, q)) setDrag({ mode: "draw", sx: Math.round(q.x), sy: Math.round(q.y) });
     else if (inside(house, q)) setDrag({ mode: "move", target: "house", ox: q.x - house.x, oy: q.y - house.y, start: house });
     else if (shape && !inHouse && q.x >= 0 && q.y >= 0 && q.x <= lotW && q.y <= lotD) setDrag({ mode: "draw", sx: Math.round(q.x), sy: Math.round(q.y) });
@@ -87,6 +134,10 @@ export default function Sketch2D({
     const q = toFeet(e);
     if (drag.mode === "equip") {
       onChange({ ...sketch, equip: sketch.equip.map((x) => (x.id === drag.id ? { ...x, x: Math.round(q.x - drag.ox), y: Math.round(q.y - drag.oy) } : x)) });
+    } else if (drag.mode === "resize") {
+      const to = resizeRect(drag.start, drag.handle, q.x, q.y);
+      if (drag.target === "house") onChange({ ...sketch, house: to });
+      else onChange({ ...sketch, proj: to });
     } else if (drag.mode === "move") {
       const r = sketch[drag.target];
       const to = { ...r, x: Math.round(q.x - drag.ox), y: Math.round(q.y - drag.oy) };
@@ -195,10 +246,21 @@ export default function Sketch2D({
             <rect x={pxX(proj.x)} y={px(proj.y)} width={proj.w * sc} height={proj.d * sc} rx={2} />
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">{label}</text>
           </g>
-          <text x={cx} y={px(proj.y) - 5} textAnchor="middle" className="sk-size">{proj.w} ft</text>
-          <text x={pxX(proj.x + proj.w) + 5} y={cy} dominantBaseline="middle" className="sk-size">{proj.d} ft</text>
+          <text x={cx} y={px(proj.y) - 11} textAnchor="middle" className="sk-size">{proj.w} ft</text>
+          <text x={pxX(proj.x + proj.w) + 11} y={cy} dominantBaseline="middle" className="sk-size">{proj.d} ft</text>
         </>
       )}
+
+      {/* Resize handles: house corners, then all eight on the project */}
+      {(["nw", "ne", "se", "sw"] as Handle[]).map((h) => {
+        const p = handlePoint(house, h);
+        return <rect key={`h-${h}`} x={pxX(p.x) - 4} y={px(p.y) - 4} width={8} height={8} className="sk-handle sk-handle-house" style={{ cursor: CURSOR[h] }} />;
+      })}
+      {shape &&
+        HANDLES.map((h) => {
+          const p = handlePoint(proj, h);
+          return <rect key={`p-${h}`} x={pxX(p.x) - 5} y={px(p.y) - 5} width={10} height={10} className="sk-handle" style={{ cursor: CURSOR[h] }} />;
+        })}
 
       {links.map((l, i) => (
         <line key={i} x1={pxX(l.a.x)} y1={px(l.a.y)} x2={pxX(l.b.x)} y2={px(l.b.y)} className={l.cls} />

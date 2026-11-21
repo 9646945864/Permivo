@@ -95,6 +95,27 @@ function clampRect(r: Rect, lotW: number, lotD: number): Rect {
   return { w, d, x: clampN(r.x, 0, lotW - w), y: clampN(r.y, 0, lotD - d) };
 }
 
+export function isWithin(r: Rect, outer: Rect) {
+  return r.x >= outer.x && r.y >= outer.y && r.x + r.w <= outer.x + outer.w && r.y + r.d <= outer.y + outer.d;
+}
+export function overlapArea(a: Rect, b: Rect) {
+  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+  const d = Math.min(a.y + a.d, b.y + b.d) - Math.max(a.y, b.y);
+  return w > 0 && d > 0 ? w * d : 0;
+}
+
+/**
+ * A room addition follows where it is placed: moved fully inside the house it becomes "Convert inside"
+ * (a new story stays a new story); moved out of the house it becomes "Build out".
+ */
+export function followPlacement(s: Sketch, kind: SketchKind): { sketch: Sketch; switched: AddType | null } {
+  if (kind !== "addition") return { sketch: s, switched: null };
+  const within = isWithin(s.proj, s.house);
+  if (s.addType === "out" && within) return { sketch: { ...s, addType: "inside" }, switched: "inside" };
+  if (s.addType !== "out" && !within) return { sketch: { ...s, addType: "out", height: Math.max(8, s.height) }, switched: "out" };
+  return { sketch: s, switched: null };
+}
+
 function clampInside(r: Rect, outer: Rect): Rect {
   const w = clampN(r.w, 1, outer.w);
   const d = clampN(r.d, 1, outer.d);
@@ -194,6 +215,15 @@ export function notesFor(s: Sketch, kind: SketchKind, county: string, location: 
         text: "Mecklenburg's plan review list includes any garage with living space, and enclosing a deck into a room. For other conversions, ask the Plan Review Facilitator Line, 980-314-2633.",
       });
     }
+  }
+  if ((kind === "deck" || kind === "garage") && overlapArea(s.proj, s.house) > 0) {
+    notes.push({
+      tone: "warn",
+      text: `The ${KIND_NAMES[kind]} overlaps the house outline. Move it so it sits beside the house, or for a room inside the house choose Room addition, then Convert inside.`,
+    });
+  }
+  if (kind === "addition" && s.addType === "out" && overlapArea(s.proj, s.house) > 0) {
+    notes.push({ tone: "info", text: "Part of the addition overlaps the house. Only the part outside the house adds to the footprint; drag it fully inside to treat it as a conversion." });
   }
   if (meck && kind === "garage") {
     notes.push({ tone: "info", text: "Mecklenburg says a one-story detached garage with no living space needs a permit but not plan review." });

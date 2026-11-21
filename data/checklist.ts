@@ -893,6 +893,54 @@ export const CHECKLIST: ChecklistItem[] = [
     status: "verified",
   },
 
+  // Trade work (electrical, plumbing, HVAC). Only facts already sourced elsewhere in Permivo.
+  ...(["mecklenburg", "cabarrus", "catawba"] as JurisdictionId[]).map(
+    (jurisdiction): ChecklistItem => ({
+      id: `TR1-${jurisdiction}`,
+      jurisdiction,
+      checkedOn: "2026-11-20",
+      group: "before",
+      projects: ["trade"],
+      where: "any",
+      title: "Check whether the trade work needs a permit",
+      what: "State law lets some work costing $40,000 or less go without a building permit, but not work that changes plumbing design or adds or changes heating, air conditioning or electrical systems.",
+      why: "Most new or changed electrical, plumbing and HVAC work needs a permit, so this decides whether you apply at all.",
+      how: "Like-kind replacement of devices and fixtures does not need a permit under the statute. Anything that adds or changes a system does. If you are not sure which side your job is on, ask the county before you start.",
+      sourceLabel: "N.C. Gen. Stat. 160D-1110(c), Building permits",
+      sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_160D/GS_160D-1110.html",
+      status: "verified",
+    })
+  ),
+  {
+    id: "TR2",
+    jurisdiction: "mecklenburg",
+    checkedOn: "2026-11-12",
+    group: "application",
+    projects: ["trade"],
+    where: "any",
+    title: "Separate permits for electrical, plumbing, and heating and air conditioning",
+    what: "Mecklenburg says separate permits are required for building, electrical, heating and air conditioning, and plumbing work.",
+    why: "Each trade is permitted and inspected on its own, so one application does not cover the others.",
+    how: "Name each trade you are doing in the application (electrical, plumbing, HVAC) and apply for each one. The county says simple equipment changes can be quick online. Details and exceptions are not confirmed, so check with the county.",
+    sourceLabel: "Mecklenburg Code Enforcement site",
+    sourceUrl: "https://code.mecknc.gov",
+    status: "partly",
+  },
+  {
+    id: "TR3",
+    jurisdiction: "mecklenburg",
+    checkedOn: "2026-11-12",
+    group: "application",
+    projects: ["trade"],
+    where: "any",
+    title: "List every trade contractor on the application",
+    what: "The county's submittal requirements say to include all trade contractors on the application.",
+    why: "Electrical, plumbing and HVAC work on a project is tied to the contractors named on it.",
+    how: "When the trade work is part of a deck, addition or garage, name each trade contractor (electrical, plumbing, mechanical) on the building permit application.",
+    sourceLabel: "Mecklenburg Code Enforcement, Project Submittal Requirements",
+    sourceUrl: PLAN_REVIEW,
+    status: "verified",
+  },
 ];
 
 export function itemsFor(

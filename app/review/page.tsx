@@ -8,6 +8,8 @@ import { NotCovered, PartialNote, PlaceSelector, isCovered, usePlace } from "../
 import { STATUS_LABELS, type Status } from "../../data/rules";
 import type { ReviewResult, ReviewState } from "../../data/reviewContext";
 import { FEEDBACK_URL } from "../../data/site";
+import SketchTool from "../components/sketch/SketchTool";
+import type { SketchKind } from "../components/sketch/model";
 
 const STATE_STYLE: Record<ReviewState, { label: string; style: string }> = {
   missing: { label: "Missing", style: "bg-red-50 text-red-900 border-red-300" },
@@ -25,9 +27,15 @@ const PROJECTS = [
   { value: "deck", label: "Deck" },
   { value: "addition", label: "Room addition" },
   { value: "garage", label: "Detached garage" },
+  { value: "trade", label: "Trade work (electrical, plumbing, HVAC)" },
 ];
-const SAMPLE =
-  "Build a 12 by 16 ground-level deck on the rear of a single-family home. Pressure-treated framing, 6x6 posts on poured concrete footings, ledger bolted to the house band board. Owner is acting as the contractor.";
+const TRADES = ["Electrical", "Plumbing", "HVAC"] as const;
+const SAMPLES: Record<string, string> = {
+  deck: "Build a 12 by 16 ground-level deck on the rear of a single-family home. Pressure-treated framing, 6x6 posts on poured concrete footings, ledger bolted to the house band board. Owner is acting as the contractor.",
+  addition: "Build a 12 by 14 one-story room addition on the rear of a single-family home. Slab on grade, wood frame walls, gable roof tied into the existing roof. A licensed general contractor will build it.",
+  garage: "Build a 20 by 24 one-story detached garage with no living space behind a single-family home. Slab on grade, wood frame, 9 ft walls, gable roof. Electrical for lights and outlets.",
+  trade: "Replace the existing gas furnace and outdoor AC unit with a new heat pump system in a single-family home. Add one new 240V circuit at the panel for the outdoor unit. Work by a licensed HVAC contractor and a licensed electrician.",
+};
 
 export default function ReviewPage() {
   const [place, setPlace] = usePlace();
@@ -38,6 +46,20 @@ export default function ReviewPage() {
   const [error, setError] = useState("");
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [trades, setTrades] = useState<string[]>([]);
+  const [tradeMsg, setTradeMsg] = useState("");
+
+  function addTradesToDraft() {
+    if (trades.length === 0) {
+      setTradeMsg("Pick at least one trade first.");
+      return;
+    }
+    const list = trades.map((t) => (t === "HVAC" ? "heating and air conditioning (HVAC)" : t.toLowerCase()));
+    const joined = list.length > 1 ? `${list.slice(0, -1).join(", ")} and ${list[list.length - 1]}` : list[0];
+    const line = `Trade work included: ${joined}.`;
+    setDraft((d) => (d.trim() ? `${d.trim()}\n\n${line}` : line).slice(0, 4000));
+    setTradeMsg("Added to your draft below.");
+  }
 
   async function run() {
     if (loading) return;
@@ -128,6 +150,49 @@ export default function ReviewPage() {
             </div>
           </section>
 
+          <section className="sk-panel mt-6" aria-labelledby="rv-trades">
+            <h2 id="rv-trades" className="text-base font-medium text-gray-900">
+              {project === "trade" ? "Which trades?" : "Any trade work in this project?"}
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Electrical, plumbing and HVAC are usually permitted separately from the building work. Name each one in your
+              application so nothing is missed.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Trades">
+              {TRADES.map((t) => {
+                const on = trades.includes(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => {
+                      setTrades((cur) => (on ? cur.filter((x) => x !== t) : [...cur, t]));
+                      setTradeMsg("");
+                    }}
+                    className={`rounded-md border px-3 py-2 text-sm ${on ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"}`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+              <button type="button" onClick={addTradesToDraft} className="rounded-md border border-orange-800 bg-white px-3 py-2 text-sm text-orange-800">
+                Add trades to my draft
+              </button>
+            </div>
+            {tradeMsg && <p className="mt-2 text-sm text-gray-600" aria-live="polite">{tradeMsg}</p>}
+          </section>
+
+          <SketchTool
+            kind={project as SketchKind}
+            county={place}
+            location={location}
+            onAddToDraft={(sentence) => {
+              setDraft((d) => (d.trim() ? `${d.trim()}\n\n${sentence}` : sentence).slice(0, 4000));
+              setTimeout(() => document.getElementById("rv-draft")?.focus(), 0);
+            }}
+          />
+
           <form
             className="mt-6"
             onSubmit={(e) => {
@@ -154,7 +219,7 @@ export default function ReviewPage() {
               >
                 {loading ? "Reviewing your draft..." : "Review my draft"}
               </button>
-              <button type="button" onClick={() => setDraft(SAMPLE)} className="rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-gray-800">
+              <button type="button" onClick={() => setDraft(SAMPLES[project] ?? SAMPLES.deck)} className="rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-gray-800">
                 Use a sample
               </button>
               <span className="text-xs text-gray-500">{draft.length}/4000</span>

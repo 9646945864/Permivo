@@ -10,6 +10,9 @@ type Events = {
   checklist_item_toggled: { project: string; location: string; done: boolean };
   tracker_permit_added: { county: string; type: string };
   tracker_event_logged: { kind: string; party: string };
+  sketch_3d_opened: { kind: string };
+  sketch_added_to_draft: { kind: string };
+  sketch_plot_plan_printed: { kind: string };
 };
 
 export function track<E extends keyof Events>(event: E, props: Events[E]) {

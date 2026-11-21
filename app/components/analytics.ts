@@ -17,9 +17,20 @@ export function track<E extends keyof Events>(event: E, props: Events[E]) {
   posthog.capture(event, props);
 }
 
+// Sign-in state seen before PostHog finished starting; applied once it has.
+let pending: { userId: string | null } | null = null;
+
+export function applyPendingIdentity() {
+  if (pending) identify(pending.userId);
+}
+
 // Ties analytics to the signed-in account (Clerk's random user id only, no name or email).
 export function identify(userId: string | null) {
-  if (!posthog.__loaded) return;
+  if (!posthog.__loaded) {
+    pending = { userId };
+    return;
+  }
+  pending = null;
   if (userId) {
     if (posthog.get_distinct_id() !== userId) posthog.identify(userId);
   } else if (posthog._isIdentified()) {

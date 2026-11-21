@@ -3,12 +3,12 @@
 // Only mark a rule "verified" when an official county or city page, or a written
 // agency reply, supports it. Third-party guides are leads, not sources.
 // Keep real addresses and personal data out of this public repository.
-// Last updated: November 20, 2026, after re-reading Union and Cabarrus county pages.
+// Last updated: November 20, 2026, after re-reading Union, Cabarrus and seven directory county pages, and adding Gaston, Iredell and Lincoln.
 
 export type ProjectType = "deck" | "addition" | "garage" | "trade";
 export type Location = "city" | "outside";
 export type Status = "verified" | "partly" | "likely" | "unverified";
-export type JurisdictionId = "mecklenburg" | "catawba" | "cabarrus" | "union" | "robeson" | "wake" | "guilford" | "buncombe" | "durham" | "johnston" | "pitt"; // add an id here when a new place is added
+export type JurisdictionId = "mecklenburg" | "catawba" | "cabarrus" | "union" | "robeson" | "wake" | "guilford" | "buncombe" | "durham" | "johnston" | "pitt" | "gaston" | "iredell" | "lincoln"; // add an id here when a new place is added
 
 export interface Jurisdiction {
   id: JurisdictionId;
@@ -188,6 +188,8 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Application forms (building and manufactured home, electrical, mechanical, plumbing, pool and spa, demolition, variance) and a permit fee schedule are linked on the county page.", sourceUrl: "https://www.robesoncountync.gov/departments/community-development/", checkedOn: "2026-11-18" },
       { text: "A county blog post says adding or replacing a deck, building a shed or accessory structure, and a room addition may need a permit depending on the project and location, and tells residents to confirm before starting. It gives no size thresholds, fees or review times.", sourceUrl: "https://www.robesoncountync.gov/single-post/how-to-apply-for-building-permits-for-home-renovations", checkedOn: "2026-11-20" },
       { text: "A county notice posted November 20, 2026 names James Locklear, Code Enforcement Officer, at 910-272-6521 for questions about local permits and inspections. It says local permitting stays with the county, and that from January 1, 2027 the county will collect a new state building code fee ($25 residential, $10 trade, alteration and repair).", sourceUrl: "https://www.robesoncountync.gov/single-post/changes-to-nc-building-code-administration", checkedOn: "2026-11-20" },
+      { text: "Robeson County fee schedule (FY 2025-2026): the zoning permit is $150 and comes first, then the Inspections Department issues the building permit. Plumbing, electrical and mechanical permits are $80 each, with a $5 technology fee. Re-inspections are $100 each for the first three. Work started without the right permits pays double. Plan review fees on the schedule are for commercial buildings only. The building permit fee itself is not on the schedule read.", sourceUrl: "https://www.robesoncountync.gov/_files/ugd/269399_eda3302a7e7846abb96b9d4898c0ba0d.pdf", checkedOn: "2026-11-20" },
+      { text: "Robeson County building permit application: inspection requests are taken 8:15 a.m. to 5:00 p.m. Monday to Friday and no inspection happens the same day as the request. The form states that an inspection is required within 6 months of issuance, and that a permit expires if work is discontinued for 12 months.", sourceUrl: "https://www.robesoncountync.gov/_files/ugd/269399_dbf823c2d92044b98afc29851f553354.pdf", checkedOn: "2026-11-20" },
     ],
   },
   wake: {
@@ -211,6 +213,7 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Wake County: a permit may also trigger a Watershed Management review if the lot has flood hazard areas or the proposed impervious area exceeds the limit. Each review is $50, invoiced through the Permit Portal. If the lot has septic, the new structure must keep required setbacks from the septic system, repair area and wells, and trenching must be shown on the site plan. A field consultation fee and site visit may apply.", sourceUrl: "https://www.wake.gov/departments-government/permits-and-inspections/permit-guidance/build-deck-or-porch", checkedOn: "2026-11-20" },
       { text: "Wake County additions: an addition that increases the footprint needs a full site plan with impervious surface calculations. An addition or alteration inside the existing footprint needs a site plan only if it adds bedrooms and the home is on septic. Plans must show the bedroom count matching the application and septic permit, energy code details, and rooms labeled by real use (not bonus, flex or office). The same workers' compensation and $40,000 owner-contractor affidavit rules apply.", sourceUrl: "https://www.wake.gov/departments-government/permits-and-inspections/permit-guidance/add-or-alter-my-home", checkedOn: "2026-11-20" },
       { text: "Wake County accessory buildings (shed or detached garage): any dimension over 12 ft needs a building permit. Buildings with no dimension over 12 ft may still need a Land Use Permit from Wake County Planning & Zoning. Plans follow the 2018 NC Residential Code. Structural elements not in the code need a sealed design by an NC engineer or architect or an accepted evaluation report.", sourceUrl: "https://www.wake.gov/departments-government/permits-and-inspections/permit-guidance/build-accessory-building", checkedOn: "2026-11-20" },
+      { text: "Wake County: the cut-off for requesting next-day inspections on building, trade and fire services permits is 3:00 p.m. on the previous business day. Wake County does not publish a stated plan review time on the pages read, so the state's 15-business-day rule for initial residential review (G.S. 160D-1110(b)) is the only time standard found.", sourceUrl: "https://www.wake.gov/departments-government/permits-and-inspections", checkedOn: "2026-11-20" },
     ],
   },
   guilford: {
@@ -241,12 +244,13 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
     officeUrl: "https://www.buncombecounty.org/Governing/Depts/Permits/Permitting.aspx",
     officePhone: "828-250-5360",
     officeAddress: "35 Woodfin Street, Asheville, NC 28801",
-    note: "The county page does not say whether the City of Asheville or other municipalities are included, so confirm with the city.",
+    note: "The county covers unincorporated Buncombe County and, by contract, Biltmore Forest, Weaverville and Woodfin. The page does not mention the City of Asheville, so confirm with the city.",
     facts: [
       { text: "Hours are Monday to Friday, 8:00 a.m. to 5:00 p.m. No permit applications or fees can be processed after 4:00 p.m.", sourceUrl: "https://www.buncombecounty.org/Governing/Depts/Permits/Permitting.aspx", checkedOn: "2026-11-18" },
       { text: "The division lists Decks and Residential Accessory Buildings among the permit services it provides in Buncombe County. Additions are not named on that page, but the county's application guide (below) lists a Single-Family/Duplex/Townhome Addition permit.", sourceUrl: "https://www.buncombecounty.org/Governing/Depts/Permits/Permitting.aspx", checkedOn: "2026-11-18" },
       { text: "Buncombe County application guide: for new construction, first get a site plan review (SPR) from the planning department, then apply. Permit types listed include Single-Family/Duplex/Townhome Addition, New Residential Deck, New Residential Sunroom, New Detached Garage (no heated space), New Carport and New Detached Accessory Building (no heated space). Applications can be brought to the office or emailed to permitdocs@buncombecounty.org. After paying the permit fee you must upload plans, plus proof of water and sewer or septic and well approval, a workers' compensation affidavit, and a lien agent appointment where required.", sourceUrl: "https://www.buncombenc.gov/DocumentCenter/View/1747/How-to-Apply-for-a-New-Residential-Building-Permit-PDF", checkedOn: "2026-11-20" },
       { text: "Buncombe County application guide: a lien agent is not required for improvements under $40,000 or for improvements to an existing single-family home used by the owner as a residence. Projects of $40,000 or more require a licensed NC general contractor. A homeowner may act as their own contractor if the home is not for sale, rent or lease, with the Owner Exemption Affidavit. A Residential Spec Sheet must be part of the plan submittal for a new deck, sunroom, detached garage or carport, and unheated detached accessory structure.", sourceUrl: "https://www.buncombenc.gov/DocumentCenter/View/1747/How-to-Apply-for-a-New-Residential-Building-Permit-PDF", checkedOn: "2026-11-20" },
+      { text: "Buncombe County site plan review (SPR), June 2026 customer guide: any project that changes a structure's footprint (new construction, additions) or involves site development needs a Site Plan Review first, filed in the county's Development Portal. The SPR fee is $25 and each submitted site plan takes a minimum of five business days to review. It is routed to zoning, flood, watershed, erosion and stormwater, hillside, retaining wall, exterior lighting, Fire Marshal and E-911 addressing reviewers. In an incorporated area, a letter of zoning approval from the town is required and the application is not processed further until it arrives. An older version of this guide said five business days was the maximum, so the real time may be longer.", sourceUrl: "https://media.buncombenc.gov/common/permits/accela/epr.pdf", checkedOn: "2026-11-20" },
     ],
   },
   durham: {
@@ -264,6 +268,8 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Durham uses one Small Project Review checklist (version dated June 4, 2024) for decks, porches and additions to an existing primary structure. Required package: signed application, the completed checklist, a smoke and carbon monoxide alarm form if any enclosed space is proposed, a scaled and dimensioned plot plan including any deck (a surveyor-sealed plot plan may be required), and full construction drawings. The job description, scope of work and plans must not conflict with each other. Omissions may cause the whole package to be rejected and require a complete re-submission.", sourceUrl: "https://www.durhamnc.gov/DocumentCenter/View/29365/2--Addition-Porches-andor-Decks-Checklist-06-04-24-fillable-", checkedOn: "2026-11-20" },
       { text: "Durham Small Project Review: for projects of $40,000 or more, submit a lien agent form or notarized Owner Lien Agent Requirement Release, a workers' compensation affidavit or certificate of liability insurance, and show a licensed general contractor or a notarized Owner Exemption Affidavit. Applications without a required lien agent will not be approved. Review fees are paid online after the application is entered in the LDO system and before review starts. Reviews are done in the order received, there may be a re-review fee for omissions, and accepting a package is not an approval.", sourceUrl: "https://www.durhamnc.gov/DocumentCenter/View/29365/2--Addition-Porches-andor-Decks-Checklist-06-04-24-fillable-", checkedOn: "2026-11-20" },
       { text: "Durham Small Project Review: the plot plan must show setbacks from property lines under the Unified Development Ordinance, mechanical equipment, streams, no-build buffers and easements, and impervious area if the lot is in a watershed overlay, with flood plain data where relevant. Zoning, historic preservation, floodplain and airport overlay questions go to the City-County Planning & Development Department (planning@durhamnc.gov). No review time is stated on the pages read.", sourceUrl: "https://www.durhamnc.gov/DocumentCenter/View/29365/2--Addition-Porches-andor-Decks-Checklist-06-04-24-fillable-", checkedOn: "2026-11-20" },
+      { text: "Durham Small Project Review is used for renovations, additions, decks, porches, non-dwelling accessory structures, pools, spas, solar panels, mobile home installs and house demolitions on one- and two-family parcels that are not new construction. Applications must be submitted electronically through the DPlans portal on the Small Project Review building permit application. There are four required checklists: renovations, additions/decks/porches, non-dwelling accessory structures, and pools/spas/hot tubs. The application fee is non-refundable, is charged once the application is accepted, must be paid before review, and counts toward the permit fee. An issued permit not picked up within six months is voided. A lot with any part in a flood plain, a local historic overlay, or a historic landmark needs more reviewers and may not follow Small Project Review time frames.", sourceUrl: "https://www.durhamnc.gov/3992/Small-Project-Plan-Review", checkedOn: "2026-11-20" },
+      { text: "Durham Enhanced Plan Review is an optional paid meeting with reviewers. It costs $600 to schedule, the meeting is held no earlier than 7 business days after the application is logged in, and the department's goal is to finish the first round of reviews within two business days of log-in. It is now available for some residential permits as well as commercial ones. It covers building, electrical, city fire, mechanical and plumbing review only, and the optional route does not replace planning or zoning approvals.", sourceUrl: "https://www.durhamnc.gov/4487/Enhanced-Plan-Review", checkedOn: "2026-11-20" },
     ],
   },
   johnston: {
@@ -300,6 +306,54 @@ export const JURISDICTIONS: Record<JurisdictionId, Jurisdiction> = {
       { text: "Permits are applied for in the county's online Permit Portal.", sourceUrl: "https://www.pittcountync.gov/371/Permitting-Center", checkedOn: "2026-11-18" },
       { text: "Pitt County steps as listed: Environmental Health approval first if the lot has septic; then an application package of two sets of plans, a completed application, and lien agent documentation for projects over $30,000. Inside a municipality or its ETJ, a municipal zoning compliance permit is also needed. Plans are reviewed for zoning, building code and floodplain compliance. The county page says the lien agent threshold is $30,000, but state law uses $40,000, so confirm.", sourceUrl: "https://www.pittcountync.gov/1418/New-Construction-Permits-Inspections", checkedOn: "2026-11-18" },
       { text: "Pitt County: if the owner does the work, an owner affidavit is required. Work that begins without a permit may be charged double permit fees. Residential fees are in the county's Manual of Fees for Residential Permits; amounts were not on the page read.", sourceUrl: "https://www.pittcountync.gov/1418/New-Construction-Permits-Inspections", checkedOn: "2026-11-18" },
+      { text: "Pitt County's residential permit brochure (undated) lists: accessory structure 400 sq ft or less $200, over 400 sq ft $300; addition to a primary structure $600; renovation $500 (minor renovations of three or fewer trade permits are $100 per permit); re-inspection $75. Work without a permit pays double the permit fee. Detached garages and storage buildings are named as accessory buildings on the county's new construction page.", sourceUrl: "https://www.pittcountync.gov/DocumentCenter/View/1086/Brochure---Permit-Process-for-New-Single-Family-Residence-Accessory-Structure-PDF", checkedOn: "2026-11-20" },
+      { text: "Pitt County is inconsistent about exemptions. The Permitting Center page lists exterior or interior non-structural work under $15,000 as not needing a permit. The county's Building Codes Enforcement Ordinance exempts residential accessory buildings with no dimension over 12 feet and non-structural repairs not over $5,000. State law (G.S. 160D-1110(c)) exempts most non-structural work costing $40,000 or less. Do not rely on any one of these without confirming with the county.", sourceUrl: "https://www.pittcountync.gov/DocumentCenter/View/796/07-03-Building-Codes-Enforcement-Ordinance", checkedOn: "2026-11-20" },
+      { text: "Pitt County Zoning Ordinance: residential accessory buildings with no dimension over 12 feet are exempt from a zoning permit. Accessory buildings under 600 sq ft may sit at the accessory side and rear setbacks, and those 600 sq ft or larger must meet the main building's setbacks. Setbacks grow one foot for every foot of height over 15 ft. Porches and decks may extend into a road setback by up to 3 ft (50 sq ft maximum) and uncovered decks into half of a rear setback. A Flood Development Permit is required if any part of the lot is in a mapped floodplain.", sourceUrl: "https://www.pittcountync.gov/DocumentCenter/View/806/07-14-Zoning-Ordinance", checkedOn: "2026-11-20" },
+      { text: "Pitt County contacts: Building Inspections and the Permitting Center 252-902-3150, Environmental Health 252-902-3200, Fire Marshal 252-902-3160, Planning 252-902-3250, permitting fax 252-830-4974.", sourceUrl: "https://www.pittcountync.gov/1418/New-Construction-Permits-Inspections", checkedOn: "2026-11-20" },
+    ],
+  },
+  gaston: {
+    id: "gaston",
+    name: "Gaston County, NC",
+    coverage: "directory",
+    officeLabel: "Gaston County Building and Development Services, Building Inspections",
+    officeUrl: "https://www.gastongov.com/175/Building-Inspections",
+    officePhone: "704-866-3185",
+    officeAddress: "128 West Main Avenue, Gastonia, NC 28052",
+    note: "Gaston County issues the building permit. Zoning comes first from the zoning jurisdiction for the lot. A City of Gastonia document says the city issues zoning permits for decks, additions and detached garages inside the city, but that document is from 2023, so confirm which office to start with.",
+    facts: [
+      { text: "Gaston County publishes separate permit packages for a residential deck, for detached buildings and structures, for new homes, additions and decks with roofs, and for remodels. Permits are submitted through the county's Citizen Self Service portal.", sourceUrl: "https://www.gastongov.com/224/Permit-Applications", checkedOn: "2026-11-20" },
+      { text: "Gaston County addition requirements (form revised 08/2025): a zoning permit from the zoning jurisdiction for the lot; a plot plan; the Appendix D workers' compensation affidavit; written Natural Resources approval for erosion control (a form is enough under 1 acre of disturbance); for an addition on septic, a Health Department septic verification, or Appendix H if no bedroom is added; plans combined into one PDF showing footing, foundation and framing details, a labeled floor plan with no bonus rooms, and elevations. A lien agent is required for new homes of $40,000 or more.", sourceUrl: "https://www.gastongov.com/DocumentCenter/View/245/Residential---New-Homes-Additions-and-Decks-with-Roofs-PDF", checkedOn: "2026-11-20" },
+      { text: "Gaston County detached buildings (form revised 08/2025): a zoning permit, a plot plan and the Appendix D affidavit are required. Plans are required for metal buildings and pole buildings (engineered), and for conventional wood-framed buildings of 1,000 sq ft or larger.", sourceUrl: "https://www.gastongov.com/DocumentCenter/View/251/Residential---Detached-Buildings--Structures-PDF", checkedOn: "2026-11-20" },
+      { text: "A City of Gastonia document dated February 2023 says the city issues zoning permits for additions, decks, detached garages, detached accessory buildings, pools and new homes, and that the county then issues the building permit. It says single-trade permits, interior residential renovations and temporary power start with the county. Residential re-roofs need a permit only in a historic district. The document is old, so confirm.", sourceUrl: "https://gastonianc.gov/images/files/building_services/documents/Zoning_Permit_for_Construction_Approval-Doing_Business-Permit_and_Inspections.pdf", checkedOn: "2026-11-20" },
+    ],
+  },
+  iredell: {
+    id: "iredell",
+    name: "Iredell County, NC",
+    coverage: "directory",
+    officeLabel: "Iredell County Building Standards Division",
+    officeUrl: "https://iredellcountync.gov/234/Building-Standards-Division",
+    officeAddress: "349 N. Center St., Statesville, NC 28677",
+    note: "Zoning is separate from building. Mooresville, Statesville, Harmony and Troutman have their own zoning jurisdictions, and Love Valley has none. The county page does not state who handles building permits inside those towns, so confirm. The county's published phone numbers are from a 2017 brochure, so no phone number is listed here.",
+    facts: [
+      { text: "Iredell County FAQ: permits are not required for work costing $40,000 or less on one- and two-family dwellings unless it involves load-bearing structure, plumbing design changes, heating or air conditioning changes, electrical changes, or materials the code does not allow. The county links a guide to G.S. 160D-1110(c).", sourceUrl: "https://iredellcountync.gov/m/faq?cat=17", checkedOn: "2026-11-20" },
+      { text: "Iredell County FAQ: a permit expires six months (180 days) after issue if no work starts, and when work stops for 12 months (365 days from the last inspection). Permits issued since January 1, 2019 follow the 2018 NC building codes, except electrical, which follows the 2021 National Electrical Code.", sourceUrl: "https://iredellcountync.gov/m/faq?cat=17", checkedOn: "2026-11-20" },
+      { text: "Iredell County FAQ: plans for one- and two-family dwellings are not generally submitted for plan review, but a complete set matching the permit scope must be on the job site for the inspector. All commercial projects require plan review.", sourceUrl: "https://iredellcountync.gov/m/faq?cat=17", checkedOn: "2026-11-20" },
+      { text: "Iredell County accessory structure brochure (dated 2017): a zoning permit is required first for any structure or addition, including carports, detached garages, porches and sunrooms, and no other permit is issued without it. Typical accessory setbacks are 10 ft from side and rear lines and 25 ft from a side line next to a street, and accessory buildings go behind the front building line. This brochure is old, so confirm the numbers.", sourceUrl: "https://www.iredellcountync.gov/DocumentCenter/View/307/Accessory-Building", checkedOn: "2026-11-20" },
+    ],
+  },
+  lincoln: {
+    id: "lincoln",
+    name: "Lincoln County, NC",
+    coverage: "directory",
+    officeLabel: "Lincoln County Planning and Inspections",
+    officeUrl: "https://lincolncountync.gov/146/Inspections",
+    officeAddress: "353 N. Generals Blvd., Lincolnton, NC 28092",
+    note: "No phone number or town coverage was found on the pages read. The county publishes step-by-step guides for decks and detached garages that were not read.",
+    facts: [
+      { text: "Lincoln County lists these residential applications: a Residential Building Permit Packet for new homes, renovations, additions and structural alterations; an Accessory Structure Permit Application for structures with any dimension of 12 feet or greater; and a Trades Permit Application used for new installs, upgrades, decks, re-roofs and service changes. A Pre Permit Letter Form is required to start the building permit process with Environmental Health. The fee schedule was adopted for FY27 on July 7, 2026.", sourceUrl: "https://www.lincolncountync.gov/366/Residential-Applications", checkedOn: "2026-11-20" },
+      { text: "Lincoln County publishes homeowner building guides for decks, detached garages, one-story additions, patio covers and carports, pole barns and other simple accessory projects.", sourceUrl: "https://lincolncountync.gov/1434/Building-Guides", checkedOn: "2026-11-20" },
     ],
   },
 };
@@ -1144,5 +1198,38 @@ export const STATE_RULES: StateRule[] = [
     sourceUrl: "https://dashboard.ncleg.gov/api/Services/BillSummary/2025/S257-SMCO-126(sl)-v-3",
     status: "partly",
     note: "The fee and its start date are in the legislature's own summary. The dollar amounts are from one county's notice, not from the statute text, so confirm them with the Department of Labor (1-800-625-2267) or your county. The notice says the building code itself does not change on that date.",
+  },
+  {
+    id: "S7",
+    checkedOn: "2026-11-20",
+    title: "A county that reviews residential plans has 15 business days",
+    summary:
+      "A local government does not have to review residential building plans. If it chooses to, it must finish the initial review within 15 business days of submission, and it must run that review at the same time as approvals from other State, federal and local agencies. If it has not finished within 20 business days, it must refund 10% of the total permit application fee for each additional business day, up to 10 business days.",
+    sourceLabel: "N.C. Gen. Stat. 160D-1110(b), Building permits",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_160D/GS_160D-1110.html",
+    status: "verified",
+    note: "This is a state limit on the first review only, not a promise that the permit is issued by then. Corrections and resubmittals add time. The statute text read here is current through S.L. 2024-49.",
+  },
+  {
+    id: "S8",
+    checkedOn: "2026-11-20",
+    title: "Small jobs of $40,000 or less may not need a permit",
+    summary:
+      "No building permit is required for work costing $40,000 or less in a single-family home, farm building or commercial building, if it follows the current State Building Code and does not involve any of these: adding, repairing or replacing load-bearing structure; changing plumbing design; adding or changing heating, air conditioning or electrical systems (like-kind replacement of devices and fixtures is fine); materials the code does not allow; added roofing (replacement is fine); or changes the State Fire Code covers. Replacing windows, doors, exterior siding, and the pickets, railings, stair treads and decking of porches and decks does not need a permit.",
+    sourceLabel: "N.C. Gen. Stat. 160D-1110(c), Building permits",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_160D/GS_160D-1110.html",
+    status: "verified",
+    note: "A new deck, deck frame or detached garage adds structure, so this exemption does not cover it. Some county pages list lower dollar limits ($15,000 or $5,000), and those do not match the statute. Zoning and flood rules can still apply even when no building permit is needed.",
+  },
+  {
+    id: "S9",
+    checkedOn: "2026-11-20",
+    title: "Limits on what a county can demand for one- and two-family homes",
+    summary:
+      "A county may not require an engineer's or architect's seal on residential plans for a one- or two-family dwelling unless the State Building Code requires it. It may not require more than one building permit for simultaneous projects at the same address under the Residential Code. Plans must name their author. It may not hold a permit hostage for unrelated work on another property unless there is a public safety issue.",
+    sourceLabel: "N.C. Gen. Stat. 160D-1110(b), (d)(2) and (h)",
+    sourceUrl: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_160D/GS_160D-1110.html",
+    status: "verified",
+    note: "The code itself requires a seal for some work, such as certain hot tub decks, so a county asking for one is not automatically wrong. Ask which code section requires it.",
   },
 ];

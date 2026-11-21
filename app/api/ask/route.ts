@@ -8,15 +8,16 @@
 //      shows the closest records. Ask Permivo therefore works with no API key at all.
 //
 // Providers (set any you have; numbers 1 to 4 set the order):
-//   ASK_LLM_1_KEY, ASK_LLM_1_MODEL, and optionally ASK_LLM_1_BASE_URL (same for 2, 3 and 4).
+//   ASK_LLM_1_KEY, and optionally ASK_LLM_1_MODEL and ASK_LLM_1_BASE_URL (same for 2, 3 and 4).
 //   The names are forgiving: ASK_LLM_KEY_2 works the same as ASK_LLM_2_KEY, and so on.
-//   If BASE_URL is missing it is worked out from the key: sk-or- is OpenRouter, gsk_ is Groq,
-//   AIza is Google Gemini. The MODEL is always required (copy the exact name from the provider).
+//   BASE_URL is worked out from the key when missing (Gemini, OpenRouter, Groq, DeepSeek), and a
+//   MODEL is chosen from the provider's own model list when missing. See data/llm.ts.
 //   ANTHROPIC_API_KEY (+ optional ANTHROPIC_MODEL, default claude-haiku-5-5) is tried last if set.
 // Other env: ASK_DAILY_CAP (default 500 model calls per server instance).
 // Questions are not stored or logged.
 
 import { NC_COUNTIES } from "../../../data/ncCounties";
+import { chat, slots } from "../../../data/llm";
 import { failureReason, reportAllProvidersFailed, type ProviderFailure } from "../../../data/monitoring";
 import { JURISDICTIONS, type JurisdictionId } from "../../../data/rules";
 import {
@@ -64,50 +65,21 @@ function overDailyCap() {
 
 type Provider = { name: string; call: (system: string, reference: string, user: string, signal: AbortSignal) => Promise<string> };
 
-// Reads ASK_LLM_<n>_<NAME> first, then ASK_LLM_<NAME>_<n>. Slot 1 also accepts ASK_LLM_<NAME>.
-function pick(i: number, name: string): string | undefined {
-  const v = process.env[`ASK_LLM_${i}_${name}`] ?? process.env[`ASK_LLM_${name}_${i}`] ?? (i === 1 ? process.env[`ASK_LLM_${name}`] : undefined);
-  return v && v.trim() ? v.trim() : undefined;
-}
-
-function baseFromKey(key?: string): string | undefined {
-  if (!key) return undefined;
-  if (key.startsWith("sk-or-")) return "https://openrouter.ai/api/v1";
-  if (key.startsWith("gsk_")) return "https://api.groq.com/openai/v1";
-  if (key.startsWith("AIza")) return "https://generativelanguage.googleapis.com/v1beta/openai";
-  return undefined;
-}
-
+// Provider settings and model choice live in data/llm.ts (shared with /api/review).
 function providers(): Provider[] {
-  const list: Provider[] = [];
-  for (let i = 1; i <= 4; i++) {
-    const key = pick(i, "KEY");
-    const model = pick(i, "MODEL");
-    const base = pick(i, "BASE_URL") ?? baseFromKey(key);
-    if (!base || !key || !model) continue;
-    list.push({
-      name: `llm${i}`,
-      async call(system, reference, user, signal) {
-        const res = await fetch(`${base.replace(/\/+$/, "")}/chat/completions`, {
-          method: "POST",
-          signal,
-          headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-          body: JSON.stringify({
-            model,
-            temperature: 0,
-            max_tokens: 900,
-            messages: [
-              { role: "system", content: `${system}\n\n${reference}` },
-              { role: "user", content: user },
-            ],
-          }),
-        });
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-        return data.choices?.[0]?.message?.content ?? "";
-      },
-    });
-  }
+  const list: Provider[] = slots().map((slot) => ({
+    name: `llm${slot.n}`,
+    call: (system, reference, user, signal) =>
+      chat(
+        slot,
+        [
+          { role: "system", content: `${system}\n\n${reference}` },
+          { role: "user", content: user },
+        ],
+        900,
+        signal
+      ),
+  }));
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (anthropicKey) {
     list.push({

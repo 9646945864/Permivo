@@ -14,4 +14,4 @@ export const NC_COUNTIES: string[] = [
 ];
 export const COVERED_COUNTIES = ["Mecklenburg", "Cabarrus", "Catawba"];
 // Counties with verified office contacts and a few sourced facts, but no verified rules yet.
-export const DIRECTORY_COUNTIES = ["Union", "Robeson", "Wake", "Guilford", "Buncombe", "Durham", "Johnston", "Pitt"];
+export const DIRECTORY_COUNTIES = ["Union", "Robeson", "Wake", "Guilford", "Buncombe", "Durham", "Johnston", "Pitt", "Gaston", "Iredell", "Lincoln"];

@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 import { AuthControls } from "./AuthState";
 
 const TOOLS = [
-  { href: "/planner", label: "Planner" },
-  { href: "/checklist", label: "Checklist" },
-  { href: "/ask", label: "Ask" },
-  { href: "/review", label: "Review" },
-  { href: "/tracker", label: "Tracker" },
+  { href: "/plan", label: "1 · Plan" },
+  { href: "/review", label: "2 · Review" },
+  { href: "/tracker", label: "3 · Track" },
 ];
 
 export default function ToolHeader() {

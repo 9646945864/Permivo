@@ -321,7 +321,8 @@ export default function TrackerPage() {
     <main className="mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
       <p className="print-only text-sm text-gray-700">Permivo permit timeline{printedOn ? ` · printed ${printedOn}` : ""}</p>
-      <h1 className="tool-title text-3xl text-[#211b18]">Permivo tracker</h1>
+      <p className="no-print text-xs font-medium uppercase tracking-wide text-orange-800">Step 3 of 3</p>
+      <h1 className="tool-title text-3xl text-[#211b18]">Track your permit</h1>
       <p className="mt-1 text-gray-600">
         Log each step of a permit. Compare the real timeline with what the agencies say.
       </p>

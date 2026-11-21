@@ -77,9 +77,10 @@ export default function ReviewPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <ToolHeader />
-      <h1 className="tool-title text-3xl text-[#211b18]">Draft review</h1>
+      <p className="text-xs font-medium uppercase tracking-wide text-orange-800">Step 2 of 3</p>
+      <h1 className="tool-title text-3xl text-[#211b18]">Is your application ready?</h1>
       <p className="mt-1 text-gray-600">
-        Write or paste your permit application description. Permivo checks it against the county&apos;s checklist and shows what is covered, missing or unclear.
+        Before you submit, paste your permit application description. Permivo checks it against the county&apos;s checklist and shows what is covered, missing or unclear, so you can fix gaps before a reviewer sends it back.
       </p>
 
       <div role="note" className="mt-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
@@ -218,7 +219,8 @@ export default function ReviewPage() {
       )}
 
       <p className="mt-8 text-sm text-gray-600">
-        Need the full list first? Use the <Link href="/checklist" className="text-orange-800 underline">readiness checklist</Link>.
+        Need the full list first? See <Link href="/plan#ready" className="text-orange-800 underline">what to have ready</Link> in Plan.
+        Submitted? Log each step in <Link href="/tracker" className="text-orange-800 underline">Track</Link>.
       </p>
     </main>
   );

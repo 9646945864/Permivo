@@ -95,15 +95,14 @@ export default function Home() {
         <nav>
           <a href="#tools">Tools</a>
           <a href="#status">Status</a>
-          <Link href="/planner" className="nav-tool-link">Planner</Link>
-          <Link href="/checklist" className="nav-tool-link">Checklist</Link>
-          <Link href="/ask" className="nav-tool-link">Ask</Link>
-          <Link href="/tracker" className="nav-tool-link">Tracker</Link>
+          <Link href="/plan" className="nav-tool-link">Plan</Link>
+          <Link href="/review" className="nav-tool-link">Review</Link>
+          <Link href="/tracker" className="nav-tool-link">Track</Link>
           <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"} aria-pressed={darkMode}>
             <span className="theme-icon">{darkMode ? "☼" : "☾"}</span>
             <span className="theme-label">{darkMode ? "Light" : "Dark"}</span>
           </button>
-          <Link href="/planner" className="header-cta">Try the planner <span>↗</span></Link>
+          <Link href="/plan" className="header-cta">Plan a project <span>↗</span></Link>
         </nav>
       </header>
 
@@ -113,7 +112,7 @@ export default function Home() {
           <h1 id="hero-title">The clearer route to <em>getting built.</em></h1>
           <p className="hero-lede">Permivo helps small residential contractors understand what comes next — before a permit turns into a surprise.</p>
           <div className="hero-actions">
-            <Link href="/planner" className="primary-button">Plan a project <span>→</span></Link>
+            <Link href="/plan" className="primary-button">Plan a project <span>→</span></Link>
             <a href="#how-it-works" className="text-link">See how it works <span>↓</span></a>
           </div>
           <div className="trust-row"><span><b>01</b> Mecklenburg County</span><span><b>●</b> Sources, not guesses</span></div>
@@ -162,7 +161,7 @@ export default function Home() {
                   </div>
                 )}
                 {scene !== 2 || showSceneDetails ? (
-                  <Link href="/planner" className="text-link">Explore the planner <span>→</span></Link>
+                  <Link href="/plan" className="text-link">Start planning <span>→</span></Link>
                 ) : (
                   <button type="button" className="text-link detail-reopen" onClick={() => setShowSceneDetails(true)}>Show details <span>↓</span></button>
                 )}
@@ -177,33 +176,27 @@ export default function Home() {
 
       <section id="tools" className="tools-section">
         <div className="section-heading">
-          <div><p className="eyebrow">05 · THE TOOLS</p><h2>Four tools, <em>one route.</em></h2></div>
-          <p>Everything you need to move from “what if?” to “what’s next?”</p>
+          <div><p className="eyebrow">05 · THE ROUTE</p><h2>Three steps, <em>one route.</em></h2></div>
+          <p>Plan it, check it, track it. Stuck on something? Tap “Ask a question” on any page.</p>
         </div>
         <div className="tool-grid">
-          <Link href="/planner" className="tool-card featured">
-            <span className="tool-number">01 / LIVE</span>
-            <h3>Route planner <span>↗</span></h3>
-            <p>Pick a project and location. See which reviews may apply, with stated times and sources.</p>
-            <div className="card-arrow">Open planner →</div>
+          <Link href="/plan" className="tool-card featured">
+            <span className="tool-number">STEP 01</span>
+            <h3>Plan <span>↗</span></h3>
+            <p>Pick a project and location. See which reviews may apply, then tick off what to have ready, with sources for each item.</p>
+            <div className="card-arrow">Plan a project →</div>
+          </Link>
+          <Link href="/review" className="tool-card">
+            <span className="tool-number">STEP 02</span>
+            <h3>Review <span>↗</span></h3>
+            <p>Paste your application before you submit. See what is covered, missing or unclear against the county checklist.</p>
+            <div className="card-arrow">Check my application →</div>
           </Link>
           <Link href="/tracker" className="tool-card">
-            <span className="tool-number">02 / LIVE</span>
-            <h3>Permit tracker <span>↗</span></h3>
-            <p>Log dates, comments, and holds. Keep your real timeline in view.</p>
-            <div className="card-arrow">Open tracker →</div>
-          </Link>
-          <Link href="/checklist" className="tool-card">
-            <span className="tool-number">03 / LIVE</span>
-            <h3>Readiness checklist <span>↗</span></h3>
-            <p>See what each requirement is, why it exists, and how to complete it. Tick items off as you go.</p>
-            <div className="card-arrow">Open checklist →</div>
-          </Link>
-          <Link href="/ask" className="tool-card">
-            <span className="tool-number">04 / NEW</span>
-            <h3>Ask Permivo <span>↗</span></h3>
-            <p>Ask a permit question in plain words. Answers come only from checked rules, with the source and how sure we are.</p>
-            <div className="card-arrow">Ask a question →</div>
+            <span className="tool-number">STEP 03</span>
+            <h3>Track <span>↗</span></h3>
+            <p>Log dates, comments, and holds after you submit. Compare your real timeline with what the agencies say.</p>
+            <div className="card-arrow">Track a permit →</div>
           </Link>
         </div>
       </section>
@@ -262,7 +255,7 @@ export default function Home() {
       <footer>
         <Link href="/" className="brand"><Mark /><span>permivo</span></Link>
         <span>Early prototype · Not legal advice</span>
-        <span><Link href="/planner">Planner</Link><Link href="/tracker">Tracker</Link><Link href="/checklist">Checklist</Link><Link href="/ask">Ask</Link><Link href="/rules">Rules</Link><Link href="/about">About</Link><Link href="/disclaimer">Disclaimer</Link></span>
+        <span><Link href="/plan">Plan</Link><Link href="/review">Review</Link><Link href="/tracker">Track</Link><Link href="/rules">Rules</Link><Link href="/about">About</Link><Link href="/disclaimer">Disclaimer</Link></span>
       </footer>
     </main>
   );

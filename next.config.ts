@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY || process.env.POSTHOG_KEY || "",
     NEXT_PUBLIC_POSTHOG_UI_HOST: posthogUi,
   },
+  // Old tool pages, merged into Plan · Review · Track. Kept so saved links and bookmarks still work.
+  async redirects() {
+    return [
+      { source: "/planner", destination: "/plan", permanent: true },
+      { source: "/checklist", destination: "/plan#ready", permanent: true },
+      { source: "/ask", destination: "/plan?ask=1", permanent: true },
+    ];
+  },
   // Send analytics through this site's own address (/ingest) so ad blockers do not drop it.
   async rewrites() {
     return [

@@ -1,13 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import ToolHeader from "../components/ToolHeader";
-import { track } from "../components/analytics";
-import { PartialNote, PlaceSelector, jurisdictionFor, usePlace } from "../components/PlaceSelector";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { track } from "./analytics";
+import { PlaceSelector, jurisdictionFor, usePlace } from "./PlaceSelector";
 import { STATUS_LABELS, type Status } from "../../data/rules";
 import type { AskResult } from "../../data/askContext";
 import { FEEDBACK_URL } from "../../data/site";
+
+// "Ask a question": a helper panel available on every page (was the /ask page).
+// Open it with the floating button, with any link to "?ask=1", or by calling openAsk().
+
+const PROJECT_KEY = "permivo-last-project";
+const OPEN_EVENT = "permivo:open-ask";
+
+export function rememberProject(project: string) {
+  try {
+    localStorage.setItem(PROJECT_KEY, project);
+  } catch {
+    // storage may be unavailable
+  }
+}
+
+export function openAsk() {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
 
 const STATUS_STYLES: Record<Status, string> = {
   verified: "bg-green-100 text-green-900 border-green-300",
@@ -36,7 +52,7 @@ const EXAMPLES = [
   "Do I need a license or can the owner pull the permit?",
 ];
 
-export default function AskPage() {
+function AskBox() {
   const [place, setPlace] = usePlace();
   const [project, setProject] = useState("");
   const [question, setQuestion] = useState("");
@@ -44,6 +60,15 @@ export default function AskPage() {
   const [error, setError] = useState("");
   const [result, setResult] = useState<(AskResult & { county?: string }) | null>(null);
   const j = jurisdictionFor(place);
+
+  useEffect(() => {
+    try {
+      const p = localStorage.getItem(PROJECT_KEY);
+      if (p && PROJECTS.some((x) => x.value === p)) setProject(p);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   async function ask(q: string) {
     const text = q.trim();
@@ -69,23 +94,16 @@ export default function AskPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      <ToolHeader />
-      <h1 className="tool-title text-3xl text-[#211b18]">Ask Permivo</h1>
-      <p className="mt-1 text-gray-600">
-        Ask a permit question in plain words. Answers come only from the rules Permivo has checked, with the source and how sure we are.
+    <div>
+      <p className="text-sm text-gray-600">
+        Answers come only from the rules Permivo has checked, with the source and how sure we are. The county&apos;s own
+        answer always decides. Not legal advice.
       </p>
 
-      <div role="note" className="mt-4 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
-        This assistant only repeats what is in Permivo&apos;s sources. If a rule is not confirmed, it says so. The county&apos;s own
-        answer always decides. Not legal advice.
-      </div>
-
       <PlaceSelector place={place} onChange={setPlace} />
-      <PartialNote place={place} />
 
-      <section className="mt-6" aria-labelledby="ask-project">
-        <h2 id="ask-project" className="text-sm font-medium text-gray-700">Project type (optional)</h2>
+      <div className="mt-4" role="group" aria-label="Project type (optional)">
+        <p className="text-sm font-medium text-gray-700">Project type (optional)</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {PROJECTS.map((p) => (
             <button
@@ -93,7 +111,7 @@ export default function AskPage() {
               type="button"
               aria-pressed={project === p.value}
               onClick={() => setProject(p.value)}
-              className={`rounded-md border px-3 py-2 text-sm ${
+              className={`rounded-md border px-3 py-1.5 text-sm ${
                 project === p.value ? "border-orange-800 bg-orange-800 text-white" : "border-gray-300 bg-white text-gray-800"
               }`}
             >
@@ -101,10 +119,10 @@ export default function AskPage() {
             </button>
           ))}
         </div>
-      </section>
+      </div>
 
       <form
-        className="mt-6"
+        className="mt-4"
         onSubmit={(e) => {
           e.preventDefault();
           ask(question);
@@ -129,11 +147,11 @@ export default function AskPage() {
           >
             {loading ? "Checking the sources..." : "Ask"}
           </button>
-          <span className="text-xs text-gray-500">{question.length}/400. Please do not include names or addresses.</span>
+          <span className="text-xs text-gray-500">{question.length}/400. No names or addresses, please.</span>
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {EXAMPLES.map((ex) => (
           <button
             key={ex}
@@ -151,17 +169,17 @@ export default function AskPage() {
 
       <div aria-live="polite">
         {error && (
-          <p role="alert" className="mt-6 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+          <p role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
             {error}
           </p>
         )}
 
         {result && (
-          <section className="mt-6 rounded-lg border border-orange-100 bg-white p-4" aria-labelledby="ask-answer">
+          <section className="mt-4 rounded-lg border border-orange-100 bg-white p-4" aria-labelledby="ask-answer">
             <div className="flex items-start justify-between gap-3">
-              <h2 id="ask-answer" className="text-lg font-medium text-gray-900">
+              <h3 id="ask-answer" className="text-base font-medium text-gray-900">
                 {result.mode === "search" ? "Closest matches" : "Answer"}
-              </h2>
+              </h3>
               <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${CONFIDENCE[result.confidence].style}`}>
                 {result.mode === "search" ? "Search only. Not an answer." : CONFIDENCE[result.confidence].label}
               </span>
@@ -172,17 +190,15 @@ export default function AskPage() {
                 To be more precise: {result.clarify}
               </p>
             )}
-
             {result.confidence !== "verified" && j && (
               <p className="mt-3 text-sm text-gray-700">
                 Confirm with {j.confirmWith ?? j.officeLabel}
                 {j.officePhone ? ` (${j.officePhone})` : ""}.
               </p>
             )}
-
             {result.citations.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-900">Sources</h3>
+                <h4 className="text-sm font-medium text-gray-900">Sources</h4>
                 <ul className="mt-2 space-y-2">
                   {result.citations.map((c) => (
                     <li key={c.id} className="rounded-md border border-orange-100 p-3 text-sm">
@@ -204,7 +220,6 @@ export default function AskPage() {
                 </ul>
               </div>
             )}
-
             <p className="mt-4 text-xs text-gray-500">
               Wrong or missing?{" "}
               <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
@@ -215,11 +230,75 @@ export default function AskPage() {
           </section>
         )}
       </div>
+    </div>
+  );
+}
 
-      <p className="mt-8 text-sm text-gray-600">
-        Prefer to browse? Use the <Link href="/planner" className="text-orange-800 underline">route planner</Link> or the{" "}
-        <Link href="/checklist" className="text-orange-800 underline">readiness checklist</Link>.
-      </p>
-    </main>
+export default function AskPanel() {
+  const [open, setOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    setTimeout(() => launcherRef.current?.focus(), 0); // after the launcher is shown again
+  }, []);
+
+  // Open from ?ask=1 (old /ask links redirect here) or from openAsk().
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("ask") === "1") {
+      setOpen(true);
+      url.searchParams.delete("ask");
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    }
+    const onOpen = () => setOpen(true);
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_EVENT, onOpen);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, close]);
+
+  return (
+    <>
+      <button
+        ref={launcherRef}
+        type="button"
+        onClick={() => setOpen(true)}
+        className="ask-launcher no-print"
+        aria-haspopup="dialog"
+        hidden={open}
+      >
+        Ask a question
+      </button>
+      {open && (
+        <div className="ask-overlay no-print">
+          <div className="ask-backdrop" onClick={close} aria-hidden="true" />
+          <div role="dialog" aria-modal="true" aria-labelledby="ask-panel-title" className="ask-drawer">
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="ask-panel-title" className="text-lg font-medium">Ask a question</h2>
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={close}
+                aria-label="Close"
+                className="rounded border border-gray-300 px-2 py-1 text-sm text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="mt-3">
+              <AskBox />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

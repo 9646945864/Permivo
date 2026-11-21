@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { clerkConfigured, clerkPublishableKey } from "../data/clerkConfig";
+import AskPanel from "./components/AskPanel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,7 +9,16 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  if (!clerkConfigured()) return <html lang="en"><body>{children}</body></html>;
+  if (!clerkConfigured()) {
+    return (
+      <html lang="en">
+        <body>
+          {children}
+          <AskPanel />
+        </body>
+      </html>
+    );
+  }
 
   // Load Clerk only when its keys are set; importing it without keys fails in development.
   const [{ ClerkProvider }, { ClerkAuthBridge }] = await Promise.all([
@@ -19,7 +29,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <ClerkProvider publishableKey={clerkPublishableKey()}>
       <html lang="en">
         <body>
-          <ClerkAuthBridge>{children}</ClerkAuthBridge>
+          <ClerkAuthBridge>
+            {children}
+            <AskPanel />
+          </ClerkAuthBridge>
         </body>
       </html>
     </ClerkProvider>

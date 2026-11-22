@@ -32,7 +32,7 @@ export function ClerkControls() {
       </SignOutButton>
     </span>
   ) : (
-    <SignInButton mode="modal">
+    <SignInButton mode="modal" forceRedirectUrl="/dashboard" signUpForceRedirectUrl="/dashboard">
       <button type="button" className="rounded border border-orange-800 px-3 py-1 text-sm text-orange-800">
         Sign in
       </button>

@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     import("./components/ClerkParts"),
   ]);
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey()} signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl="/">
+    <ClerkProvider publishableKey={clerkPublishableKey()} signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl="/" signInForceRedirectUrl="/dashboard" signUpForceRedirectUrl="/dashboard">
       <html lang="en">
         <body>
           <ClerkAuthBridge>

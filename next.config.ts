@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/planner", destination: "/plan", permanent: true },
       { source: "/checklist", destination: "/plan#ready", permanent: true },
-      { source: "/ask", destination: "/plan?ask=1", permanent: true },
+      { source: "/ask", destination: "/?ask=1", permanent: false }, // Plan needs an account; Ask does not
     ];
   },
   // Send analytics through this site's own address (/ingest) so ad blockers do not drop it.

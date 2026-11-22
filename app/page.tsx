@@ -115,7 +115,7 @@ export default function Home() {
             <Link href="/plan" className="primary-button">Plan a project <span>→</span></Link>
             <a href="#how-it-works" className="text-link">See how it works <span>↓</span></a>
           </div>
-          <div className="trust-row"><span><b>01</b> Mecklenburg County</span><span><b>●</b> Sources, not guesses</span></div>
+          <div className="trust-row"><span><b>01</b> Mecklenburg County</span><span><b>●</b> Sources, not guesses</span><span><b>✓</b> Free account to start planning</span></div>
         </div>
         <div className="hero-aside">
           <div className="hero-image-wrap">

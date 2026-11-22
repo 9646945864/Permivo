@@ -11,9 +11,9 @@ const appearance = {
 };
 
 export function SignInForm() {
-  return <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" fallbackRedirectUrl="/plan" appearance={appearance} />;
+  return <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" fallbackRedirectUrl="/plan" signUpFallbackRedirectUrl="/plan" appearance={appearance} />;
 }
 
 export function SignUpForm() {
-  return <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/plan" appearance={appearance} />;
+  return <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/plan" signInFallbackRedirectUrl="/plan" appearance={appearance} />;
 }

@@ -5,10 +5,10 @@ import { clerkConfigured, clerkPublishableKey } from "./data/clerkConfig";
 // - The Plan page needs an account: signed-out visitors go to /sign-in (with a link to sign up)
 //   and come back to the page they asked for. Signed-in visitors go straight through.
 // - Signed-in visitors who land on /sign-in or /sign-up (for example right after signing in)
-//   are sent on to where they were going, or to Plan.
-const PROTECTED = [/^\/plan(\/.*)?$/];
+//   are sent on to where they were going, or to My projects (/dashboard), which also needs an account.
+const PROTECTED = [/^\/plan(\/.*)?$/, /^\/dashboard(\/.*)?$/];
 const AUTH_PAGES = /^\/sign-(in|up)(\/.*)?$/;
-const AFTER_SIGN_IN = "/plan";
+const AFTER_SIGN_IN = "/dashboard";
 
 /** Where to send a signed-in visitor: their redirect_url if it points at this site, else Plan. */
 function destination(req: NextRequest): URL {

@@ -20,7 +20,7 @@ export default async function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }
       <h1 className="tool-title text-3xl text-[#211b18]">{signIn ? "Sign in to plan your permit" : "Create your free account"}</h1>
       <p className="mt-1 text-gray-600">
         {signIn
-          ? "Already have an account? Sign in and you go straight to your plan, with your checklist and permits saved."
+          ? "Already have an account? Sign in and you go straight in, with your projects, checklist and permits saved."
           : "New to Permivo? An account keeps your plan, checklist and permit timeline on every device. It is free."}
       </p>
       {form}

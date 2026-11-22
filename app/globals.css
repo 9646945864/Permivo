@@ -433,3 +433,30 @@ footer > span:last-child { display: flex; gap: 16px; }
 .sk-handle { fill: #fff; stroke: #c2410c; stroke-width: 1.5; }
 .sk-handle-house { stroke: #8b857b; }
 .sk-handle:hover { fill: #fed7aa; }
+
+/* ============ 17. My projects (dashboard) ============ */
+.db-wrap { max-width: 52rem; }
+.db-acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.6rem; margin: 1.25rem 0 1rem; }
+.db-act { display: block; border: 1px solid #fed7aa; border-radius: 0.6rem; background: #fff; padding: 0.75rem 0.9rem; color: #211b18; text-decoration: none; transition: border-color 0.15s, background-color 0.15s; }
+.db-act:hover { border-color: #c2410c; background: #fff7ed; }
+.db-act b { display: block; font-weight: 600; color: #7c2d12; }
+.db-act span { font-size: 0.8125rem; color: #6b6158; }
+.db-permit { border: 1px solid #fed7aa; border-radius: 0.6rem; background: #fff; }
+.db-permit-head { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.75rem 0.9rem; background: none; border: 0; text-align: left; cursor: pointer; flex-wrap: wrap; }
+.db-name { flex: 1; min-width: 10rem; font-weight: 600; color: #211b18; }
+.db-name small { display: block; font-weight: 400; font-size: 0.75rem; color: #6b6158; }
+.db-pill { font-size: 0.72rem; padding: 0.15rem 0.6rem; border-radius: 9999px; white-space: nowrap; border: 1px solid transparent; }
+.db-open { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.db-ok { background: #dcfce7; color: #166534; border-color: #86efac; }
+.db-warn { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.db-muted { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+.db-chev { color: #9ca3af; font-size: 0.8rem; }
+.db-permit-body { border-top: 1px solid #fde3cc; padding: 0.75rem 0.9rem; }
+.db-ev { display: flex; gap: 0.75rem; padding: 0.15rem 0; }
+.db-ev b { min-width: 6.5rem; font-weight: 600; color: #211b18; }
+.db-ev span { color: #4b5563; }
+.db-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
+.db-card { border: 1px solid #fed7aa; border-radius: 0.6rem; background: #fff; padding: 0.9rem 1rem; }
+.db-bar { height: 0.4rem; background: #ffedd5; border-radius: 0.25rem; overflow: hidden; margin-top: 0.3rem; }
+.db-bar i { display: block; height: 100%; background: #c2410c; }
+.inline-block { display: inline-block; }

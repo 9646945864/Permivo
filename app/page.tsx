@@ -8,7 +8,7 @@ import { PROJECT_LABELS, RULES as ALL_RULES, STATUS_LABELS } from "../data/rules
 // The home page showcases Mecklenburg County. Other counties appear in the planner and checklist.
 const RULES = ALL_RULES.filter((rule) => rule.jurisdiction === "mecklenburg");
 import { FEEDBACK_URL } from "../data/site";
-import { AuthControls } from "./components/AuthState";
+import { AuthControls, useAuthInfo } from "./components/AuthState";
 
 // The feedback link lives in data/site.ts. Until it is set the button shows "Feedback form coming soon".
 
@@ -43,6 +43,7 @@ function SceneArt({ index, tilt }: { index: number; tilt: { x: number; y: number
 }
 
 export default function Home() {
+  const { signedIn } = useAuthInfo();
   const [scene, setScene] = useState(0);
   const [filter, setFilter] = useState<"all" | "verified" | "open">("all");
   const [showAll, setShowAll] = useState(true);
@@ -96,6 +97,7 @@ export default function Home() {
         <nav>
           <a href="#tools">Tools</a>
           <a href="#status">Status</a>
+          {signedIn && <Link href="/dashboard" className="nav-tool-link">My projects</Link>}
           <Link href="/plan" className="nav-tool-link">Plan</Link>
           <Link href="/review" className="nav-tool-link">Review</Link>
           <Link href="/tracker" className="nav-tool-link">Track</Link>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AuthControls } from "./AuthState";
+import { AuthControls, useAuthInfo } from "./AuthState";
 
 const TOOLS = [
   { href: "/plan", label: "1 · Plan" },
@@ -12,6 +12,8 @@ const TOOLS = [
 
 export default function ToolHeader() {
   const pathname = usePathname();
+  const auth = useAuthInfo();
+  const links = auth.signedIn ? [{ href: "/dashboard", label: "My projects" }, ...TOOLS] : TOOLS;
   return (
     <header className="no-print mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-orange-200 pb-4">
       <Link href="/" className="flex items-center gap-2" aria-label="Permivo home">
@@ -20,7 +22,7 @@ export default function ToolHeader() {
         <span className="text-lg font-bold tracking-tight text-[#211b18]">Permivo</span>
       </Link>
       <nav aria-label="Tools" className="flex items-center gap-4 text-sm">
-        {TOOLS.map((t) => {
+        {links.map((t) => {
           const active = pathname === t.href;
           return (
             <Link

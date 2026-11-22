@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import posthog from "posthog-js";
-import { sentryPrivacy } from "./sentry.shared";
+import { sentryPrivacy } from "./monitoring/sentry.shared";
 import { applyPendingIdentity } from "./app/components/analytics";
 
 // Browser error reporting. Does nothing until SENTRY_DSN is set (next.config.ts passes it here).

@@ -8,6 +8,7 @@ import { PROJECT_LABELS, RULES as ALL_RULES, STATUS_LABELS } from "../data/rules
 // The home page showcases Mecklenburg County. Other counties appear in the planner and checklist.
 const RULES = ALL_RULES.filter((rule) => rule.jurisdiction === "mecklenburg");
 import { FEEDBACK_URL } from "../data/site";
+import { AuthControls } from "./components/AuthState";
 
 // The feedback link lives in data/site.ts. Until it is set the button shows "Feedback form coming soon".
 
@@ -103,6 +104,7 @@ export default function Home() {
             <span className="theme-label">{darkMode ? "Light" : "Dark"}</span>
           </button>
           <Link href="/plan" className="header-cta">Plan a project <span>↗</span></Link>
+          <AuthControls />
         </nav>
       </header>
 

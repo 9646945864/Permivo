@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { COVERED_COUNTIES, DIRECTORY_COUNTIES, NC_COUNTIES } from "../../data/ncCounties";
 import { JURISDICTIONS, STATE_RULES, type JurisdictionId } from "../../data/rules";
 import { FEEDBACK_URL } from "../../data/site";
+import { COUNTY_DIRECTORY, type CountyOffice } from "../../data/countyDirectory";
 
 const KEY = "permivo-place-v1";
 
@@ -46,9 +47,15 @@ export function isCovered(place: string) {
   return COVERED_COUNTIES.includes(place);
 }
 
+/** Permit office contacts for a county that has no entry in JURISDICTIONS (see data/countyDirectory.ts). */
+export function directoryFor(place: string): CountyOffice | undefined {
+  return COUNTY_DIRECTORY.find((o) => o.county === place);
+}
+
 export function PlaceSelector({ place, onChange }: { place: string; onChange: (p: string) => void }) {
-  const early = NC_COUNTIES.filter((c) => DIRECTORY_COUNTIES.includes(c));
-  const others = NC_COUNTIES.filter((c) => !COVERED_COUNTIES.includes(c) && !DIRECTORY_COUNTIES.includes(c));
+  const hasOffice = (c: string) => DIRECTORY_COUNTIES.includes(c) || !!directoryFor(c);
+  const early = NC_COUNTIES.filter((c) => !COVERED_COUNTIES.includes(c) && hasOffice(c));
+  const others = NC_COUNTIES.filter((c) => !COVERED_COUNTIES.includes(c) && !hasOffice(c));
   return (
     <section className="mt-6" aria-labelledby="place-heading">
       <h2 id="place-heading" className="text-sm font-medium text-gray-700">
@@ -73,13 +80,15 @@ export function PlaceSelector({ place, onChange }: { place: string; onChange: (p
             </option>
           ))}
         </optgroup>
-        <optgroup label="Not covered yet">
-          {others.map((c) => (
-            <option key={c} value={c}>
-              {c} County
-            </option>
-          ))}
-        </optgroup>
+        {others.length > 0 && (
+          <optgroup label="Not covered yet">
+            {others.map((c) => (
+              <option key={c} value={c}>
+                {c} County
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
     </section>
   );
@@ -128,6 +137,8 @@ export function NotCovered({ place }: { place: string }) {
       </section>
     );
   }
+  const office = directoryFor(place);
+  if (office) return <OfficeContacts place={place} office={office} />;
   return (
     <section className="mt-8 rounded-lg border border-orange-200 bg-white p-4" aria-live="polite">
       <h2 className="text-lg font-medium text-gray-900">{place} County is not covered yet</h2>
@@ -144,6 +155,77 @@ export function NotCovered({ place }: { place: string }) {
           Tell us you need {place} County
         </a>{" "}
         (counties with the most requests come first).
+      </p>
+    </section>
+  );
+}
+
+const firstPhone = (s: string) => /\d{3}-\d{3}-\d{4}/.exec(s)?.[0];
+
+/** A county's permit office from data/countyDirectory.ts: contacts and notes from its own pages, no rules. */
+function OfficeContacts({ place, office }: { place: string; office: CountyOffice }) {
+  const tel = office.phone ? firstPhone(office.phone) : undefined;
+  return (
+    <section className="mt-8 rounded-lg border border-orange-200 bg-white p-4" aria-live="polite">
+      <h2 className="text-lg font-medium text-gray-900">{place} County: permit office contacts</h2>
+      <p className="mt-2 text-sm text-gray-700">
+        Permivo has not checked {place} County&apos;s permit rules yet, so the planner, checklist and draft review are
+        not shown. Here is the county&apos;s permit office, taken from its own website. Call or email them to confirm what
+        your project needs.
+      </p>
+      <div className="mt-3 rounded-md border border-orange-100 bg-orange-50 p-3 text-sm text-gray-800">
+        <p className="font-medium">{office.office}</p>
+        {office.address && <p>{office.address}</p>}
+        {office.phone && (
+          <p>
+            Phone:{" "}
+            {tel ? (
+              <a href={`tel:${tel.replace(/-/g, "")}`} className="text-orange-800 underline">
+                {office.phone}
+              </a>
+            ) : (
+              office.phone
+            )}
+          </p>
+        )}
+        {office.email && (
+          <p>
+            Email:{" "}
+            <a href={`mailto:${office.email.replace(/&/g, "%26")}`} className="text-orange-800 underline">
+              {office.email}
+            </a>
+          </p>
+        )}
+        <p className="mt-1 flex flex-wrap gap-x-4">
+          {office.portalUrl && office.portalUrl !== office.sourceUrl && (
+            <a href={office.portalUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+              Online permits portal
+            </a>
+          )}
+          <a href={office.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+            County permit page
+          </a>
+        </p>
+      </div>
+      {office.notes.length > 0 && (
+        <>
+          <h3 className="mt-4 text-sm font-medium text-gray-900">What the county&apos;s page says</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
+            {office.notes.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="mt-3 text-xs text-gray-500">
+        Contacts only, not verified rules. Read from the county&apos;s page on {office.checkedOn}; details can change, so
+        confirm with the office.
+      </p>
+      <p className="mt-3 text-sm">
+        <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" className="text-orange-800 underline">
+          Tell us you need {place} County
+        </a>{" "}
+        (counties with the most requests get full rules first).
       </p>
     </section>
   );

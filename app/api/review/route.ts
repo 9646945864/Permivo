@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   if (draft.length < MIN_DRAFT) return json({ error: "Write a little more first (at least a couple of sentences)." }, 400);
   if (draft.length > MAX_DRAFT) return json({ error: `Keep the draft under ${MAX_DRAFT} characters.` }, 400);
   if (project !== "deck" && project !== "addition" && project !== "garage" && project !== "trade") return json({ error: "Pick a project type." }, 400);
-  if (!COVERED_COUNTIES.includes(county)) return json({ error: "Draft review is available for Mecklenburg, Cabarrus and Catawba counties." }, 400);
+  if (!COVERED_COUNTIES.includes(county)) return json({ error: `Draft review is available for ${COVERED_COUNTIES.join(", ")} counties.` }, 400);
 
   const id = county.toLowerCase() as JurisdictionId;
   if (!JURISDICTIONS[id]) return json({ error: "Unknown county." }, 400);

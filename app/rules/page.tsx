@@ -61,6 +61,23 @@ export default function RulesPage() {
 
       <section className="mt-6" aria-labelledby="filters-heading">
         <h2 id="filters-heading" className="sr-only">Filters</h2>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {COVERED_COUNTIES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={county === c}
+              onClick={() => setCounty(c)}
+              className={`rounded-md border px-3 py-1.5 text-sm ${
+                county === c
+                  ? "border-orange-800 bg-orange-800 text-white"
+                  : "border-orange-200 bg-white text-gray-800 hover:border-orange-400"
+              }`}
+            >
+              {c} County
+            </button>
+          ))}
+        </div>
         <div className="flex flex-wrap gap-2">
           {(["all", ...STATUS_ORDER] as const).map((s) => (
             <button
